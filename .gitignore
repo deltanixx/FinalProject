@@ -14,6 +14,10 @@ ipch/
 *.iobj
 *.ipdb
 
+# Unnecessary SFML build system files
+lib/cmake/
+lib/pkgconfig/
+
 # Build logs and metadata
 *.tlog
 *.log
