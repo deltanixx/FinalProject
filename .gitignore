@@ -1,0 +1,23 @@
+# Visual Studio
+.vs/
+*.user
+ipch/
+*.VC.db
+*.VC.VC.opendb
+
+# Compiled outputs
+*.exe
+*.obj
+*.pdb
+*.ilk
+*.idb
+*.iobj
+*.ipdb
+
+# Build logs and metadata
+*.tlog
+*.log
+*.recipe
+*.lastbuildstate
+*_MD.tlog
+microsoft/
