@@ -1,5 +1,7 @@
 # Final Project — Terraria-Inspired Game
 
+[Here is the link to the checklist - Remove link after final submission](https://trello.com/invite/b/69e9089c276e19c1b67adee2/ATTI5e3bdfb1b0367b4263326e64a3452410C828D335/finalproject)
+
 A 2D sandbox survival game built in C++ with SFML 3, inspired by Terraria. Features include terrain mining, enemy AI, and a dynamic day/night cycle.
 
 ## Features (planned / in progress)
@@ -27,9 +29,6 @@ No additional dependencies — SFML 3 is bundled in the repo (`include/` and `li
 3. Set the configuration to **Debug | x64**
 4. Press **Ctrl+Shift+B** to build
 5. Press **F5** to run
-
-## [Here is the link to the checklist - Remove link after final submission](https://trello.com/invite/b/69e9089c276e19c1b67adee2/ATTI5e3bdfb1b0367b4263326e64a3452410C828D335/finalproject)
-
 
 The SFML DLLs are already placed in the output directories so the game runs immediately after building.
 
