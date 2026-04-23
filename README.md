@@ -1,6 +1,6 @@
 # Final Project — Terraria-Inspired Game
 
-[Here is the link to the checklist - Remove link after final submission](https://trello.com/invite/b/69e9089c276e19c1b67adee2/ATTI5e3bdfb1b0367b4263326e64a3452410C828D335/finalproject)
+[For group: Here is the link to the checklist - Remove link after final submission](https://trello.com/invite/b/69e9089c276e19c1b67adee2/ATTI5e3bdfb1b0367b4263326e64a3452410C828D335/finalproject)
 
 A 2D sandbox survival game built in C++ with SFML 3, inspired by Terraria. Features include terrain mining, enemy AI, and a dynamic day/night cycle.
 
