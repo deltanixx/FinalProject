@@ -8,15 +8,7 @@ int main()
     // Create the main window
     sf::RenderWindow window(sf::VideoMode({ 600, 800 }), "SFML window");
 
-    sf::Texture texture;
-
-    //Template for enemy sprite & texture 
-    texture.loadFromFile("./Images/Enemy.jpg");
-    sf::Sprite sprite(texture);
-    sprite.setScale(sf::Vector2f(0.1f, 0.15f));
-
-    //sf::Font font("C:/Windows/Fonts/arial.ttf");
-    //sf::Text text(font, "Hello SFML", 50);
+    Enemy enemy1("./Images/EnemyTest.jpg"); //Enemy creation
 
     // Start the game loop
     while (window.isOpen())
@@ -29,14 +21,12 @@ int main()
                 window.close();
         }
 
+        enemy1.update(); //Move enemy
         // Clear screen
         window.clear(sf::Color::White);
 
-        window.draw(sprite);
+        enemy1.draw(window); //Display enemy
 
-        //window.draw(text);
-        // 
-        // Update the window
         window.display();
     }
 }
