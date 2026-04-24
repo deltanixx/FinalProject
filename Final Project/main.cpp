@@ -30,7 +30,7 @@ int main()
         }
 
         // Clear screen
-        window.clear();
+        window.clear(sf::Color::White);
 
         window.draw(sprite);
 
