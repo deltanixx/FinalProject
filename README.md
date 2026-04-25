@@ -35,7 +35,7 @@ The SFML DLLs are already placed in the output directories so the game runs imme
 ## Project Structure
 
 ```
-Final Project/          — Visual Studio project, source files & images
+Final Project/          — Visual Studio project, source files, images & music
 include/SFML/           — SFML 3 headers
 lib/                    — SFML 3 import and static libraries
 x64/Debug/              — Debug build output (DLLs included)
