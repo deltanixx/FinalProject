@@ -23,7 +23,7 @@ void Enemy::draw(sf::RenderWindow& window)
     window.draw(sprite);
 }
 
-void Enemy::update() //Movement for enemy
+void Enemy::update() //All movement related stuff for enemy
 {
     sf::Vector2f pos = sprite.getPosition();
 
