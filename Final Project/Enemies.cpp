@@ -11,7 +11,7 @@ Enemy::Enemy(const std::string& imagePath) : sprite(texture)
         std::cout << "Texture loaded" << std::endl;
     }
     sprite.setTexture(texture, true);
-    sprite.setScale(sf::Vector2f(0.025f, 0.05f));
+    sprite.setScale(sf::Vector2f(0.075f, 0.075f));
 
     float vx = (rand() % 1) - 0.05;
     float vy = 0; //(rand() % 7) - 3 - for y-movement
@@ -23,9 +23,17 @@ void Enemy::draw(sf::RenderWindow& window)
     window.draw(sprite);
 }
 
-void Enemy::update() //All movement related stuff for enemy
+sf::FloatRect Enemy::getBounds()
+{
+    return sprite.getGlobalBounds();
+}
+
+void Enemy::update(float deltaTime) //All movement related stuff for enemy
 {
     sf::Vector2f pos = sprite.getPosition();
+
+    //Physics
+    velocity.y += gravity * deltaTime;
 
     if (pos.x < 0 || pos.x > 400) //Boundaries for x-position
         velocity.x = -velocity.x;

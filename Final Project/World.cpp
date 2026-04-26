@@ -1,4 +1,5 @@
 #include "World.hpp"
+#include "Enemies.hpp"
 
 World::World()
 {
@@ -10,10 +11,10 @@ void World::Draw(sf::RenderWindow& window)
     sf::Texture dirtTexture;
     sf::Texture grassTexture; 
     dirtTexture.loadFromFile("./Assets/Tiles/dirt.png");
-    grassTexture.loadFromFile("./Assets/Tiles/grass.png");
+    grassTexture.loadFromFile("./Assets/Tiles/grass.png"); 
 
     sf::Sprite dirt(dirtTexture);
-    sf::Sprite grass(grassTexture);
+    sf::Sprite grass(grassTexture); //Could you try to make this more accessible? I can't really use collisions with the sprites being in a void function
 
     auto size = window.getSize(); 
 

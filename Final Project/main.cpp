@@ -11,13 +11,16 @@ int main()
     sf::RenderWindow window(sf::VideoMode({ 1280, 800 }), "SFML window");
     World world; 
 
-    Enemy enemy1("./Assets/Enemy/EnemyTest.jpg"); //Enemy creation
+    Enemy enemy1("./Assets/Enemy/Enemy.jpg"); //Enemy creation
     MusicPlayer music("./Assets/Music/theme.oga");  
     music.play();
     
+    sf::Clock deltaClock;  // tracks time between frames
+
     while (window.isOpen())
     {
-        
+        float deltaTime = deltaClock.restart().asSeconds(); //Time
+
         while (const std::optional event = window.pollEvent())
         {
             
@@ -25,7 +28,7 @@ int main()
                 window.close();
         }
 
-        enemy1.update(); //Movement for enemy
+        enemy1.update(deltaTime); //Movement for enemy
         // Clear screen
         window.clear(sf::Color(135, 206, 235));
 
