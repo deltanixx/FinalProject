@@ -15,17 +15,19 @@ void World::Draw(sf::RenderWindow& window)
     sf::Sprite dirt(dirtTexture);
     sf::Sprite grass(grassTexture);
 
-    for (int col = 0; col <= 1280 / tileSize; col++)
+    auto size = window.getSize(); 
+
+    for (int col = 0; col <= (int)size.x / tileSize; col++)
     {
-        grass.setPosition({ (float)(col * tileSize), 400.f});
+        grass.setPosition({ (float)(col * tileSize), size.y / 2.f });
         window.draw(grass);
     }
 
-    for (int row = 1; row < 400 / tileSize; row++)
+    for (int row = 1; row < (int)size.y / tileSize; row++)
     {
-        for (int col = 0; col <= 1280 / tileSize; col++)
+        for (int col = 0; col <= (int)size.x / tileSize; col++)
         {
-            dirt.setPosition({ (float)(col * tileSize), 400.f + (float)(row * tileSize) });
+            dirt.setPosition({ (float)(col * tileSize), size.y / 2.f + (float)(row * tileSize) });
             window.draw(dirt);
         }
     }
