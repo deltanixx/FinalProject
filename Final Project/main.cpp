@@ -9,8 +9,8 @@ int main()
     // Create the main window
     sf::RenderWindow window(sf::VideoMode({ 600, 800 }), "SFML window");
 
-    Enemy enemy1("./Images/EnemyTest.jpg"); //Enemy creation
-    MusicPlayer music("./Music/RandomSong.ogg");  
+    Enemy enemy1("./Assets/Enemy/EnemyTest.jpg"); //Enemy creation
+    MusicPlayer music("./Assets/Music/RandomSong.ogg");  
     music.play();
 
     // Start the game loop
