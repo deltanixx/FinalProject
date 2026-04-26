@@ -29,9 +29,13 @@ int main()
         // Clear screen
         window.clear(sf::Color(135, 206, 235));
 
-        enemy1.draw(window); //Display enemy
-
+        /*
+        *
+        * Everything below from now on will need to be generated in the world class. It's more readable (:
+        * 
+        */
         world.Draw(window); 
+        enemy1.draw(window); //Display enemy
 
         window.display();
     }
