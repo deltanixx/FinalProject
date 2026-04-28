@@ -13,8 +13,20 @@ public:
 
 	Item& operator=(Item& rhs);
 
+	// getters
+	std::string getName() const;
+	int getId() const;
+	sf::Texture getTexture() const;
+
+
+	static void loadItems(); // initialize items
+	static Item& getItem(const int& id);
+
 protected:
 	std::string name;
 	int id;
 	sf::Texture texture;
+
+private:
+	static std::vector<Item> itemList;
 };
