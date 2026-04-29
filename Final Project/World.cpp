@@ -51,18 +51,11 @@ World::World()
         worldMatrix[i].resize(1280 / TILE_SIZE);
 }
 
-/// Draws every tile in the world matrix at its corresponding screen position.
+/// Draws the pre-built sprite cache — no lookups or allocations per frame.
 void World::Draw(sf::RenderWindow& window)
 {
-    for (int i = 0; i < worldMatrix.size(); i++)
-    {
-        for (int j = 0; j < worldMatrix[0].size(); j++)
-        {
-            sf::Sprite block = dynamic_cast<Block*>(Item::getItem(worldMatrix[i][j]))->getSprite();
-            block.setPosition({(float)(j * TILE_SIZE), (float)(i * TILE_SIZE)});
-            window.draw(block);
-        }
-    }
+    for (const sf::Sprite& sprite : spriteCache)
+        window.draw(sprite);
 }
 
 /// Procedurally generates terrain using layered Perlin noise, placing grass at the surface and dirt below.
@@ -90,6 +83,87 @@ void World::generateWorld(sf::RenderWindow& window)
             worldMatrix[i][j] = 1;
     }
 
+    // Build sprite cache — done once here so Draw has zero per-frame overhead
+    spriteCache.clear();
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            if (worldMatrix[i][j] == 0) continue; // skip air tiles
+            sf::Sprite sprite = dynamic_cast<Block*>(Item::getItem(worldMatrix[i][j]))->getSprite();
+            sprite.setPosition({ (float)(j * TILE_SIZE), (float)(i * TILE_SIZE) });
+            spriteCache.push_back(sprite);
+        }
+    }
+
     std::cout << "World Generated" << std::endl;
+}
+
+bool World::isSolid(int row, int col) const
+{
+    if (row < 0 || row >= (int)worldMatrix.size())    return false;
+    if (col < 0 || col >= (int)worldMatrix[0].size()) return false;
+    return worldMatrix[row][col] != 0;
+}
+
+void World::resolveCollision(sf::Vector2f& pos, const sf::Vector2f& size, sf::Vector2f& vel, bool& onGround, float deltaTime) const
+{
+    auto tileRow = [](float y) { return (int)(y / TILE_SIZE); };
+    auto tileCol = [](float x) { return (int)(x / TILE_SIZE); };
+
+    // Resolve X axis first — move horizontally, stop at the first solid tile hit
+    pos.x += vel.x * deltaTime;
+    {
+        int rowTop    = tileRow(pos.y);
+        int rowBottom = tileRow(pos.y + size.y);
+        int colLeft   = tileCol(pos.x);
+        int colRight  = tileCol(pos.x + size.x);
+
+        bool hitX = false;
+        for (int row = rowTop; row <= rowBottom && !hitX; row++)
+            for (int col = colLeft; col <= colRight && !hitX; col++)
+                if (isSolid(row, col))
+                {
+                    pos.x = (vel.x > 0) ? (float)(col * TILE_SIZE) - size.x
+                                        : (float)((col + 1) * TILE_SIZE);
+                    vel.x = 0.f;
+                    hitX  = true;
+                }
+    }
+
+    // Resolve Y axis — scan in the direction of travel so we always hit the first surface, not the deepest
+    onGround = false;
+    pos.y += vel.y * deltaTime;
+    {
+        int rowTop    = tileRow(pos.y);
+        int rowBottom = tileRow(pos.y + size.y);
+        int colLeft   = tileCol(pos.x);
+        int colRight  = tileCol(pos.x + size.x);
+
+        bool hitY = false;
+        if (vel.y >= 0)  // falling — scan top-down, land on the shallowest solid tile
+        {
+            for (int row = rowTop; row <= rowBottom && !hitY; row++)
+                for (int col = colLeft; col <= colRight && !hitY; col++)
+                    if (isSolid(row, col))
+                    {
+                        pos.y    = (float)(row * TILE_SIZE) - size.y;
+                        onGround = true;
+                        vel.y    = 0.f;
+                        hitY     = true;
+                    }
+        }
+        else  // rising — scan bottom-up, stop at the deepest solid tile overhead
+        {
+            for (int row = rowBottom; row >= rowTop && !hitY; row--)
+                for (int col = colLeft; col <= colRight && !hitY; col++)
+                    if (isSolid(row, col))
+                    {
+                        pos.y = (float)((row + 1) * TILE_SIZE);
+                        vel.y = 0.f;
+                        hitY  = true;
+                    }
+        }
+    }
 }
         

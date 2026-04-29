@@ -1,21 +1,23 @@
 #include "Enemies.hpp"
 #include <iostream>
-
+#include <cstdlib>
 
 Enemy::Enemy(const std::string& imagePath) : sprite(texture)
 {
-    if (!texture.loadFromFile(imagePath)) {
+    if (!texture.loadFromFile(imagePath))
         std::cerr << "Texture failed" << std::endl;
-    }
-    else {
+    else
         std::cout << "Texture loaded" << std::endl;
-    }
+
     sprite.setTexture(texture, true);
     sprite.setScale(sf::Vector2f(0.075f, 0.075f));
 
-    float vx = (rand() % 1) - 0.05;
-    float vy = 0; //(rand() % 7) - 3 - for y-movement
-    velocity = sf::Vector2f(vx, vy);
+    position = sf::Vector2f(300.f, 50.f);
+    sprite.setPosition(position);
+    size     = sprite.getGlobalBounds().size;
+
+    moveDir  = (rand() % 2 == 0) ? 1.f : -1.f;
+    velocity = sf::Vector2f(0.f, 0.f);
 }
 
 void Enemy::draw(sf::RenderWindow& window)
@@ -28,17 +30,19 @@ sf::FloatRect Enemy::getBounds()
     return sprite.getGlobalBounds();
 }
 
-void Enemy::update(float deltaTime) //All movement related stuff for enemy
+/// Applies gravity, resolves tile collisions, and walks the enemy v reversing direction on wall impact.
+void Enemy::update(float deltaTime, const World& world)
 {
-    sf::Vector2f pos = sprite.getPosition();
+    if (!onGround)
+        velocity.y += gravity * deltaTime;
 
-    //Physics
-    velocity.y += gravity * deltaTime;
+    velocity.x = moveSpeed * moveDir;
 
-    if (pos.x < 0 || pos.x > 400) //Boundaries for x-position
-        velocity.x = -velocity.x;
-    if (pos.y < 0 || pos.y > 750) //Boundaries for y-position
-        velocity.y = -velocity.y;
+    world.resolveCollision(position, size, velocity, onGround, deltaTime);
 
-    sprite.move(velocity);
+    // Reverse direction if a horizontal tile collision stopped us
+    if (velocity.x == 0.f)
+        moveDir = -moveDir;
+
+    sprite.setPosition(position);
 }

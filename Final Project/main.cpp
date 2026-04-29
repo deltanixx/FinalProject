@@ -10,14 +10,16 @@ int main()
 {
     // Create the main window
     sf::RenderWindow window(sf::VideoMode({ 1280, 800 }), "SFML window");
+    window.setFramerateLimit(60);
+    Assets::loadTextures();
+    Item::loadItems();
+
     World world = World();
     world.generateWorld(window);
 
     Enemy enemy1("./Assets/Enemy/Enemy.jpg"); //Enemy creation
-    MusicPlayer music("./Assets/Music/theme.oga");  
+    MusicPlayer music("./Assets/Music/theme.oga");
     music.play();
-    Assets::loadTextures();
-    Item::loadItems();
 
     sf::Clock deltaClock;  // tracks time between frames
 
@@ -32,7 +34,7 @@ int main()
                 window.close();
         }
 
-        enemy1.update(deltaTime); //Movement for enemy
+        enemy1.update(deltaTime, world);
         // Clear screen
         window.clear(sf::Color(135, 206, 235));
 
