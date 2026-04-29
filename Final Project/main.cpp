@@ -4,17 +4,21 @@
 #include "Enemies.hpp"
 #include "World.hpp"
 #include "Music.hpp"
+#include "Block.hpp"
 
 int main()
 {
     // Create the main window
     sf::RenderWindow window(sf::VideoMode({ 1280, 800 }), "SFML window");
-    World world; 
+    World world = World();
+    world.generateWorld(window);
 
     Enemy enemy1("./Assets/Enemy/Enemy.jpg"); //Enemy creation
     MusicPlayer music("./Assets/Music/theme.oga");  
     music.play();
-    
+    Assets::loadTextures();
+    Item::loadItems();
+
     sf::Clock deltaClock;  // tracks time between frames
 
     while (window.isOpen())

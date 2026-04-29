@@ -1,19 +1,18 @@
 #include "Item.hpp"
+#include "Block.hpp"
 
-std::vector<Item> Item::itemList;
+std::vector<Item*> Item::itemList;
 
-Item::Item(const std::string& name, const int& id, const std::string& textureFileName) 
+Item::Item(const std::string& name, const int& id, const int& textureId) : texture(&Assets::getTexture(textureId))
 {
 	this->name = name;
 	this->id = id;
-	this->texture.loadFromFile(textureFileName);
 }
 
-Item::Item(const Item& rhs) 
+Item::Item(const Item& rhs) : texture(rhs.texture)
 {
 	this->name = rhs.name;
 	this->id = rhs.id;
-	this->texture = rhs.texture;
 }
 
 Item& Item::operator=(Item& rhs) 
@@ -25,24 +24,38 @@ Item& Item::operator=(Item& rhs)
 	return *this;
 }
 
-std::string Item::getName() const {
+Item::~Item() 
+{
+
+}
+
+void Item::use() {}
+
+std::string Item::getName() const 
+{
 	return this->name;
 }
 
-int Item::getId() const {
+int Item::getId() const 
+{
 	return this->id;
 }
 
-sf::Texture Item::getTexture() const {
-	return this->texture;
+sf::Texture Item::getTexture() const 
+{
+	return *this->texture;
 }
 
-void Item::loadItems() {
-	itemList.push_back(Item("TestItem1", 0, "Assets/Tiles/dirt.png"));
+void Item::loadItems() 
+{
+	itemList.push_back(new Block("Air", 0, 0));
+	itemList.push_back(new Block("Dirt", 1, 1));
+	itemList.push_back(new Block("Grass", 2, 2));
 
 	std::cout << "Items Loaded" << std::endl;
 }
 
-Item& Item::getItem(const int& id) {
+Item* Item::getItem(const int& id) 
+{
 	return itemList[id];
 }

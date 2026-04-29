@@ -139,6 +139,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AssetManager.cpp" />
+    <ClCompile Include="Block.cpp" />
     <ClCompile Include="Enemies.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="main.cpp" />
@@ -147,6 +149,8 @@
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AssetManager.hpp" />
+    <ClInclude Include="Block.hpp" />
     <ClInclude Include="Enemies.hpp" />
     <ClInclude Include="Item.hpp" />
     <ClInclude Include="Music.hpp" />
