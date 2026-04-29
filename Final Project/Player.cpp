@@ -15,9 +15,17 @@ Player::Player() : sprite(idleTexture)
     float scale = (12.f * TILE_SIZE) / (float)texSize.y;
     sprite.setScale({ scale, scale });
 
+    float fullW   = (float)texSize.x * scale;
+    float fullH   = (float)texSize.y * scale;
+    float topPad  = fullH * 0.07f;
+    float botPad  = fullH * 0.17f;
+    float sidePad = fullW * 0.09f;
+
+    size         = sf::Vector2f(fullW - 2.f * sidePad, fullH - topPad - botPad);
+    spriteOffset = sf::Vector2f(-sidePad, -topPad);
+
     position = sf::Vector2f(200.f, 50.f);
-    sprite.setPosition(position);
-    size = sf::Vector2f((float)texSize.x * scale, (float)texSize.y * scale);
+    sprite.setPosition(position + spriteOffset);
 }
 
 void Player::draw(sf::RenderWindow& window)
@@ -68,18 +76,18 @@ void Player::update(float deltaTime, const World& world)
 
     applyPhysics(deltaTime, world);
 
-    // Sprite default faces left — flip horizontally when moving right.
-    // Negative x-scale pivots around origin, so offset position by size.x to keep entity left-edge aligned.
+    // Negative x-scale flips the sprite; when flipped, anchor shifts right by (size.x - spriteOffset.x)
+    // so the visible character remains aligned with the physics box.
     float absScaleX = std::abs(sprite.getScale().x);
     float scaleY    = sprite.getScale().y;
     if (facingRight)
     {
         sprite.setScale({ -absScaleX, scaleY });
-        sprite.setPosition({ position.x + size.x, position.y });
+        sprite.setPosition({ position.x + size.x - spriteOffset.x, position.y + spriteOffset.y });
     }
     else
     {
         sprite.setScale({ absScaleX, scaleY });
-        sprite.setPosition(position);
+        sprite.setPosition(position + spriteOffset);
     }
 }

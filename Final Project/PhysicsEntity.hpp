@@ -9,6 +9,7 @@ public:
     virtual void draw(sf::RenderWindow& window) = 0;
     virtual void update(float deltaTime, const World& world) = 0;
     sf::FloatRect getBounds() const;
+    void setPosition(sf::Vector2f pos);
 
 protected:
     sf::Vector2f position;
@@ -16,7 +17,7 @@ protected:
     sf::Vector2f velocity;
     bool onGround = false;
 
-    static constexpr float gravity = 500.f;
+    static constexpr float gravity = 300.f;
 
     /// Applies gravity then resolves tile collisions, updating position and velocity in place.
     void applyPhysics(float deltaTime, const World& world);

@@ -20,6 +20,9 @@ int main()
 
     Enemy       enemy1("./Assets/Enemy/Enemy.jpg");
     Player      player;
+    float worldCenterX = world.getSize().x / 2.f;
+    player.setPosition({ worldCenterX, 50.f });
+    enemy1.setPosition({ worldCenterX + 200.f, 50.f });
     MusicPlayer music("./Assets/Music/theme.oga");
     music.play();
 

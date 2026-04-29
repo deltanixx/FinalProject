@@ -74,7 +74,7 @@ void World::generateWorld(sf::RenderWindow& window)
     const int rows = (int)worldMatrix.size();
     const int cols = (int)worldMatrix[0].size();
     const int midRow = rows / 2;
-    const int amplitude = rows / 5;
+    const int amplitude = rows / 3;
 
     initNoise(std::random_device{}());
 
@@ -84,8 +84,8 @@ void World::generateWorld(sf::RenderWindow& window)
 
     for (int j = 0; j < cols; j++)
     {
-        float nx = (float)j / cols * 3.f;
-        float n = octaveNoise(nx, 4, 0.5f);
+        float nx = (float)j / cols * 10.f;
+        float n = octaveNoise(nx, 6, 0.55f);
         int surfaceRow = std::clamp(midRow + (int)(n * amplitude), 1, rows - 2);
 
         worldMatrix[surfaceRow][j] = 2;
