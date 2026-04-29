@@ -22,5 +22,5 @@ private:
     float        moveDir  = 1.f; // 1 = right, -1 = left
 
     static constexpr float gravity   = 500.f;
-    static constexpr float moveSpeed = 60.f;
+    static constexpr float moveSpeed = 25.f;
 };
