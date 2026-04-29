@@ -1,6 +1,48 @@
 #include "World.hpp"
 #include "Enemies.hpp"
 #include "AssetManager.hpp"
+#include <random>
+#include <numeric>
+#include <algorithm>
+#include <cmath>
+
+static std::vector<int> perm;
+
+/// Initializes the Perlin noise permutation table with the given seed.
+static void initNoise(unsigned int seed)
+{
+    perm.resize(512);
+    std::iota(perm.begin(), perm.begin() + 256, 0);
+    std::shuffle(perm.begin(), perm.begin() + 256, std::default_random_engine(seed));
+    for (int i = 0; i < 256; i++)
+        perm[256 + i] = perm[i];
+}
+
+static float fade(float t) { return t * t * t * (t * (t * 6.f - 15.f) + 10.f); }
+static float lerp(float a, float b, float t) { return a + t * (b - a); }
+static float grad(int hash, float x) { return (hash & 1) ? x : -x; }
+
+/// Returns a single-octave Perlin noise value in [-1, 1] for position x.
+static float noise1D(float x)
+{
+    int X = (int)std::floor(x) & 255;
+    x -= std::floor(x);
+    return lerp(grad(perm[X], x), grad(perm[X + 1], x - 1.f), fade(x));
+}
+
+/// Stacks multiple noise octaves (each half the amplitude of the last) for natural-looking terrain.
+static float octaveNoise(float x, int octaves, float persistence)
+{
+    float total = 0.f, amplitude = 1.f, frequency = 1.f, maxValue = 0.f;
+    for (int i = 0; i < octaves; i++)
+    {
+        total     += noise1D(x * frequency) * amplitude;
+        maxValue  += amplitude;
+        amplitude *= persistence;
+        frequency *= 2.f;
+    }
+    return total / maxValue;
+}
 
 World::World()
 {
@@ -9,20 +51,9 @@ World::World()
         worldMatrix[i].resize(1280 / TILE_SIZE);
 }
 
+/// Draws every tile in the world matrix at its corresponding screen position.
 void World::Draw(sf::RenderWindow& window)
 {
-    auto size = window.getSize(); 
-    const int tileSize = 16;
-    
-    //sf::Texture dirtTexture;
-    //sf::Texture grassTexture; 
-    //dirtTexture.loadFromFile("./Assets/Tiles/dirt.png");
-    //grassTexture.loadFromFile("./Assets/Tiles/grass.png"); 
-
-   /* sf::Sprite dirt(Assets::getTexture(1));
-    sf::Sprite grass(Assets::getTexture(2));*/ //Could you try to make this more accessible? I can't really use collisions with the sprites being in a void function
-
-
     for (int i = 0; i < worldMatrix.size(); i++)
     {
         for (int j = 0; j < worldMatrix[0].size(); j++)
@@ -32,46 +63,33 @@ void World::Draw(sf::RenderWindow& window)
             window.draw(block);
         }
     }
-        
-    //for (int col = 0; col <= (int)size.x / tileSize; col++)
-    //{
-    //    grass.setPosition({ (float)(col * tileSize), size.y / 2.f });
-    //    window.draw(grass);
-    //}
-
-    //for (int row = 1; row < (int)size.y / tileSize; row++)
-    //{
-    //    for (int col = 0; col <= (int)size.x / tileSize; col++)
-    //    {
-    //        dirt.setPosition({ (float)(col * tileSize), size.y / 2.f + (float)(row * tileSize) });
-    //        window.draw(dirt);
-    //    }
-    //}
 }
 
-void World::generateWorld(sf::RenderWindow& window) 
+/// Procedurally generates terrain using layered Perlin noise, placing grass at the surface and dirt below.
+void World::generateWorld(sf::RenderWindow& window)
 {
-    auto size = window.getSize();
-    for (int i = 0; i < worldMatrix.size(); i++) 
-    {
-        for (int j = 0; j < worldMatrix[0].size(); j++) 
-        {
+    const int rows = (int)worldMatrix.size();
+    const int cols = (int)worldMatrix[0].size();
+    const int midRow = rows / 2;
+    const int amplitude = rows / 5;
+
+    initNoise(std::random_device{}());
+
+    for (int i = 0; i < rows; i++)
+        for (int j = 0; j < cols; j++)
             worldMatrix[i][j] = 0;
-        }
-    }
 
-    for (int j = 0; j < worldMatrix[0].size(); j++) 
+    for (int j = 0; j < cols; j++)
     {
-        worldMatrix[worldMatrix.size() / 2][j] = 2;
-    }
+        float nx = (float)j / cols * 3.f;
+        float n = octaveNoise(nx, 4, 0.5f);
+        int surfaceRow = std::clamp(midRow + (int)(n * amplitude), 1, rows - 2);
 
-    for (int i = (worldMatrix.size() / 2) + 1; i < worldMatrix.size(); i++) 
-    {
-        for (int j = 0; j < worldMatrix[0].size(); j++) 
-        {
+        worldMatrix[surfaceRow][j] = 2;
+        for (int i = surfaceRow + 1; i < rows; i++)
             worldMatrix[i][j] = 1;
-        }
     }
 
     std::cout << "World Generated" << std::endl;
 }
+        
