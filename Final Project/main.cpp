@@ -1,5 +1,6 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
+#include <algorithm>
 #include "Enemies.hpp"
 #include "Player.hpp"
 #include "World.hpp"
@@ -17,10 +18,13 @@ int main()
     World world = World();
     world.generateWorld(window);
 
-    Enemy      enemy1("./Assets/Enemy/Enemy.jpg");
-    Player     player;
+    Enemy       enemy1("./Assets/Enemy/Enemy.jpg");
+    Player      player;
     MusicPlayer music("./Assets/Music/theme.oga");
     music.play();
+
+    const sf::Vector2f viewSize(1280.f, 800.f);
+    sf::View camera(sf::FloatRect({ 0.f, 0.f }, viewSize));
 
     sf::Clock deltaClock;
 
@@ -37,6 +41,16 @@ int main()
         enemy1.update(deltaTime, world);
         player.update(deltaTime, world);
 
+        // Centre camera on player, clamped so it never shows outside the world
+        sf::FloatRect  pb        = player.getBounds();
+        sf::Vector2f   worldSize = world.getSize();
+        float cx = pb.position.x + pb.size.x / 2.f;
+        float cy = pb.position.y + pb.size.y / 2.f;
+        cx = std::clamp(cx, viewSize.x / 2.f, worldSize.x - viewSize.x / 2.f);
+        cy = std::clamp(cy, viewSize.y / 2.f, worldSize.y - viewSize.y / 2.f);
+        camera.setCenter({ cx, cy });
+
+        window.setView(camera);
         window.clear(sf::Color(135, 206, 235));
         world.Draw(window);
         enemy1.draw(window);

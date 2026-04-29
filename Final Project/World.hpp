@@ -16,6 +16,9 @@ public:
 	void Draw(sf::RenderWindow& window);
 	void generateWorld(sf::RenderWindow& window);
 
+	/// Returns the world dimensions in pixels.
+	sf::Vector2f getSize() const;
+
 	/// Returns true if the tile at (row, col) is solid. Out-of-bounds tiles are treated as air.
 	bool isSolid(int row, int col) const;
 

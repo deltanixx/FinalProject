@@ -46,9 +46,19 @@ static float octaveNoise(float x, int octaves, float persistence)
 
 World::World()
 {
-    worldMatrix.resize(800 / TILE_SIZE);
-    for (int i = 0; i < 800 / TILE_SIZE; i++)
-        worldMatrix[i].resize(1280 / TILE_SIZE);
+    const int rows = 800 / TILE_SIZE;
+    const int cols = (1280 * 4) / TILE_SIZE; // 4x the window width for side-scrolling
+    worldMatrix.resize(rows);
+    for (int i = 0; i < rows; i++)
+        worldMatrix[i].resize(cols);
+}
+
+sf::Vector2f World::getSize() const
+{
+    return sf::Vector2f(
+        (float)(worldMatrix[0].size() * TILE_SIZE),
+        (float)(worldMatrix.size()    * TILE_SIZE)
+    );
 }
 
 /// Draws the pre-built sprite cache — no lookups or allocations per frame.
