@@ -114,8 +114,8 @@ void World::resolveCollision(sf::Vector2f& pos, const sf::Vector2f& size, sf::Ve
     // Resolve X axis first — move horizontally, stop at the first solid tile hit
     pos.x += vel.x * deltaTime;
     {
-        int rowTop    = tileRow(pos.y);
-        int rowBottom = tileRow(pos.y + size.y);
+        int rowTop    = tileRow(pos.y + 0.001f);          // slight inset so we don't grab the ceiling tile
+        int rowBottom = tileRow(pos.y + size.y - 0.001f); // exclude the floor tile the entity rests on
         int colLeft   = tileCol(pos.x);
         int colRight  = tileCol(pos.x + size.x);
 

@@ -12,7 +12,7 @@ Player::Player() : sprite(idleTexture)
     sprite.setTexture(idleTexture, true);
 
     sf::Vector2u texSize = idleTexture.getSize();
-    float scale = (2.f * TILE_SIZE) / (float)texSize.y;
+    float scale = (4.f * TILE_SIZE) / (float)texSize.y;
     sprite.setScale({ scale, scale });
 
     position = sf::Vector2f(200.f, 50.f);
