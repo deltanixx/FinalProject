@@ -14,7 +14,7 @@ Enemy::Enemy(const std::string& imagePath) : sprite(texture)
 
     position = sf::Vector2f(300.f, 50.f);
     sprite.setPosition(position);
-    size     = sprite.getGlobalBounds().size;
+    size = sprite.getGlobalBounds().size;
 
     moveDir  = (rand() % 2 == 0) ? 1.f : -1.f;
     velocity = sf::Vector2f(0.f, 0.f);
@@ -25,22 +25,12 @@ void Enemy::draw(sf::RenderWindow& window)
     window.draw(sprite);
 }
 
-sf::FloatRect Enemy::getBounds()
-{
-    return sprite.getGlobalBounds();
-}
-
-/// Applies gravity, resolves tile collisions, and walks the enemy v reversing direction on wall impact.
+/// Walks the enemy at constant speed, reversing direction on wall impact, and falls off ledges.
 void Enemy::update(float deltaTime, const World& world)
 {
-    if (!onGround)
-        velocity.y += gravity * deltaTime;
-
     velocity.x = moveSpeed * moveDir;
+    applyPhysics(deltaTime, world);
 
-    world.resolveCollision(position, size, velocity, onGround, deltaTime);
-
-    // Reverse direction if a horizontal tile collision stopped us
     if (velocity.x == 0.f)
         moveDir = -moveDir;
 
