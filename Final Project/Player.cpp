@@ -12,7 +12,7 @@ Player::Player() : sprite(idleTexture)
     sprite.setTexture(idleTexture, true);
 
     sf::Vector2u texSize = idleTexture.getSize();
-    float scale = (4.f * TILE_SIZE) / (float)texSize.y;
+    float scale = (12.f * TILE_SIZE) / (float)texSize.y;
     sprite.setScale({ scale, scale });
 
     position = sf::Vector2f(200.f, 50.f);
@@ -66,20 +66,20 @@ void Player::update(float deltaTime, const World& world)
 
     updateAnimation(left || right, deltaTime);
 
-    // Flip sprite to face direction — offset position compensates for negative x-scale pivot
+    applyPhysics(deltaTime, world);
+
+    // Sprite default faces left — flip horizontally when moving right.
+    // Negative x-scale pivots around origin, so offset position by size.x to keep entity left-edge aligned.
     float absScaleX = std::abs(sprite.getScale().x);
     float scaleY    = sprite.getScale().y;
     if (facingRight)
     {
-        sprite.setScale({ absScaleX, scaleY });
-        sprite.setPosition(position);
-    }
-    else
-    {
         sprite.setScale({ -absScaleX, scaleY });
         sprite.setPosition({ position.x + size.x, position.y });
     }
-
-    applyPhysics(deltaTime, world);
-    sprite.setPosition(facingRight ? position : sf::Vector2f(position.x + size.x, position.y));
+    else
+    {
+        sprite.setScale({ absScaleX, scaleY });
+        sprite.setPosition(position);
+    }
 }
