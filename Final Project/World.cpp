@@ -109,7 +109,7 @@ void World::generateWorld(sf::RenderWindow& window)
             if (worldMatrix[i][j] == 1)
             {
                 int depth = i - surfaceRows[j];
-                uint8_t brightness = (uint8_t)std::max(20, 255 - depth * 12);
+                uint8_t brightness = (uint8_t)std::max(20, 255 - depth * 25);
                 sprite.setColor(sf::Color(brightness, brightness, brightness));
             }
 
