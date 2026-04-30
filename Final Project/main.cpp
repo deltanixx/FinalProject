@@ -4,32 +4,29 @@
 #include "Enemies.hpp"
 #include "Player.hpp"
 #include "World.hpp"
-#include "Menu.hpp"
+#include "AssetManager.hpp"
+#include "DayNightCycle.hpp"
 #include "Music.hpp"
 #include "Block.hpp"
 
-enum GameState 
-{ 
-    MENU, PLAYING, PAUSED
-};
-
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({ 1280, 800 }), "The Game");
+    sf::RenderWindow window(sf::VideoMode({ 1280, 800 }), "SFML window");
     window.setFramerateLimit(60);
+
     Assets::loadTextures();
     Item::loadItems();
+
+    // Day/night cycle
+    DayNightCycle cycle(120.f); // 120 seconds per full cycle
+    //assign textures
+    cycle.setSunTexture(&Assets::getTexture(3));
+    cycle.setMoonTexture(&Assets::getTexture(4));
 
     World world = World();
     world.generateWorld(window);
 
-    Menu menu(1280.f, 800.f);
-    menu.addItem("Play"); //Start menu
-    menu.addItem("Quit");
-
-    GameState gameState = MENU;
-
-    Enemy enemy1("./Assets/Enemy/Enemy.png");
+    Enemy enemy1("./Assets/Enemy/Enemy.jpg");
     Player player;
     float worldCenterX = world.getSize().x / 2.f;
     player.setPosition({ worldCenterX, 50.f });
@@ -42,7 +39,6 @@ int main()
 
     sf::Clock deltaClock;
 
-
     while (window.isOpen())
     {
         float deltaTime = deltaClock.restart().asSeconds();
@@ -51,50 +47,13 @@ int main()
         {
             if (event->is<sf::Event::Closed>())
                 window.close();
-            if (gameState == MENU)
-            {
-                menu.handleInput(*event);
-
-                if (event->is<sf::Event::KeyPressed>())
-                {
-                    auto keyEvent = event->getIf<sf::Event::KeyPressed>();
-                    if (keyEvent->code == sf::Keyboard::Key::Enter)
-                    {
-                        if (menu.getSelectedItem() == 0)
-                            gameState = PLAYING;
-                        else if (menu.getSelectedItem() == 1)
-                            window.close();
-                    }
-                }
-            }
         }
 
-        if (gameState == MENU)
-        {
-            window.setView(window.getDefaultView());
-            window.clear(sf::Color(50, 50, 50));
-            menu.draw(window);
-            window.display();
-            continue;
-        }
-
-        // Get player position ONCE per frame
-        sf::Vector2f playerPos = player.getPosition();
-
-        // Check if enemy can see player (simplified - always true for now)
-        bool canSeePlayer = true;
-
-        // Get enemy position
-        sf::Vector2f enemyPos = enemy1.getPosition();
-
-        // Update player
+        enemy1.update(deltaTime, world);
         player.update(deltaTime, world);
 
-        // Update enemy with chase logic
-        enemy1.update(canSeePlayer, playerPos, enemyPos, deltaTime, world);
-
-        // Centre camera on player, clamped so it never shows outside the world
-        sf::FloatRect  pb = player.getBounds();
+        // Centre camera on player so it never shows outside the world
+        sf::FloatRect pb = player.getBounds();
         sf::Vector2f   worldSize = world.getSize();
         float cx = pb.position.x + pb.size.x / 2.f;
         float cy = pb.position.y + pb.size.y / 2.f;
@@ -103,7 +62,23 @@ int main()
         camera.setCenter({ cx, cy });
 
         window.setView(camera);
-        window.clear(sf::Color(135, 206, 235));
+
+        //update cycle with current camera/view
+        cycle.setView(camera);
+        cycle.setWindowSize(viewSize);
+        cycle.update(deltaTime);
+
+        window.clear(cycle.getSkyColor());
+
+        //draw sun and moon behind the world
+        const sf::Sprite& sunRef = cycle.getSunSprite();
+        const sf::Sprite& moonRef = cycle.getMoonSprite();
+        sf::Sprite sun = sunRef; //copy so we can modify color
+        sf::Sprite moon = moonRef;
+        sun.setColor(sf::Color(255,255,255, static_cast<unsigned char>(std::clamp(cycle.getDayFactor(), 0.f, 1.f) * 255.f)));
+        moon.setColor(sf::Color(255,255,255, static_cast<unsigned char>(std::clamp(1.f - cycle.getDayFactor(), 0.f, 1.f) * 255.f)));
+        window.draw(sun);
+        window.draw(moon);
         world.Draw(window);
         enemy1.draw(window);
         player.draw(window);
