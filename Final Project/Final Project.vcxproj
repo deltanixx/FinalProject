@@ -144,6 +144,7 @@
     <ClCompile Include="Enemies.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Music.cpp" />
     <ClCompile Include="PhysicsEntity.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="Block.hpp" />
     <ClInclude Include="Enemies.hpp" />
     <ClInclude Include="Item.hpp" />
+    <ClInclude Include="Menu.hpp" />
     <ClInclude Include="Music.hpp" />
     <ClInclude Include="PhysicsEntity.hpp" />
     <ClInclude Include="Player.hpp" />

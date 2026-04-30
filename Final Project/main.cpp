@@ -4,20 +4,30 @@
 #include "Enemies.hpp"
 #include "Player.hpp"
 #include "World.hpp"
+#include "Menu.hpp"
 #include "Music.hpp"
 #include "Block.hpp"
 
+enum GameState 
+{ 
+    MENU, PLAYING, PAUSED
+};
+
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({ 1280, 800 }), "SFML window");
+    sf::RenderWindow window(sf::VideoMode({ 1280, 800 }), "The Game");
     window.setFramerateLimit(60);
-
     Assets::loadTextures();
     Item::loadItems();
 
     World world = World();
     world.generateWorld(window);
 
+    Menu menu(1280.f, 800.f);
+    menu.addItem("Play"); //Start menu
+    menu.addItem("Quit");
+
+    GameState gameState = MENU;
 
     Enemy enemy1("./Assets/Enemy/Enemy.png");
     Player player;
@@ -32,6 +42,7 @@ int main()
 
     sf::Clock deltaClock;
 
+
     while (window.isOpen())
     {
         float deltaTime = deltaClock.restart().asSeconds();
@@ -40,8 +51,32 @@ int main()
         {
             if (event->is<sf::Event::Closed>())
                 window.close();
+            if (gameState == MENU)
+            {
+                menu.handleInput(*event);
+
+                if (event->is<sf::Event::KeyPressed>())
+                {
+                    auto keyEvent = event->getIf<sf::Event::KeyPressed>();
+                    if (keyEvent->code == sf::Keyboard::Key::Enter)
+                    {
+                        if (menu.getSelectedItem() == 0)
+                            gameState = PLAYING;
+                        else if (menu.getSelectedItem() == 1)
+                            window.close();
+                    }
+                }
+            }
         }
 
+        if (gameState == MENU)
+        {
+            window.setView(window.getDefaultView());
+            window.clear(sf::Color(50, 50, 50));
+            menu.draw(window);
+            window.display();
+            continue;
+        }
 
         // Get player position ONCE per frame
         sf::Vector2f playerPos = player.getPosition();
@@ -59,7 +94,7 @@ int main()
         enemy1.update(canSeePlayer, playerPos, enemyPos, deltaTime, world);
 
         // Centre camera on player, clamped so it never shows outside the world
-        sf::FloatRect  pb        = player.getBounds();
+        sf::FloatRect  pb = player.getBounds();
         sf::Vector2f   worldSize = world.getSize();
         float cx = pb.position.x + pb.size.x / 2.f;
         float cy = pb.position.y + pb.size.y / 2.f;

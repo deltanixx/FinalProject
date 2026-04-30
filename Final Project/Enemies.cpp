@@ -126,7 +126,7 @@ void Enemy::update(bool seePlayer, sf::Vector2f playerPosition, sf::Vector2f ene
                 moveDir = 1.f;
             else if (dx < 0)
                 moveDir = -1.f;
-
+            velocity.x = moveSpeed * moveDir;
             sprite.setPosition(position);
         }
     }
