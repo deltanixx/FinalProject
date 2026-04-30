@@ -21,6 +21,7 @@ private:
 
     sf::Vector2f spriteOffset; // offsets sprite render from physics box to compensate for texture padding
 
+    float playerScale = 8.f; 
     float animTimer   = 0.f;
     bool  showWalk    = false;
     bool  facingRight = true;
