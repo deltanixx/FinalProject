@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Block.cpp" />
+    <ClCompile Include="DayNightCycle.cpp" />
     <ClCompile Include="Enemies.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="main.cpp" />
@@ -155,6 +156,7 @@
   <ItemGroup>
     <ClInclude Include="AssetManager.hpp" />
     <ClInclude Include="Block.hpp" />
+    <ClInclude Include="DayNightCycle.hpp" />
     <ClInclude Include="Enemies.hpp" />
     <ClInclude Include="Item.hpp" />
     <ClInclude Include="Menu.hpp" />

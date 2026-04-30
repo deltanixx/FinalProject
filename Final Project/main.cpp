@@ -14,6 +14,8 @@ int main()
     sf::RenderWindow window(sf::VideoMode({ 1280, 800 }), "SFML window");
     window.setFramerateLimit(60);
 
+
+
     Assets::loadTextures();
     Item::loadItems();
 
