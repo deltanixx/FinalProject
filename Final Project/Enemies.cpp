@@ -57,7 +57,7 @@ bool Enemy::chasePlayer(sf::Vector2f playerPosition, sf::Vector2f enemyPosition)
     float distance = std::sqrt(dx * dx + dy * dy);
 
     // Chase range 
-    float chaseRange = 3000.f;
+    float chaseRange = 30.f;
 
     return (distance < chaseRange && distance > 0);
 }
@@ -121,12 +121,12 @@ void Enemy::update(bool seePlayer, sf::Vector2f playerPosition, sf::Vector2f ene
             // Player seen but out of range - walk toward player slowly
             float dx = playerPosition.x - position.x;
             float dy = 0;  // Only horizontal movement for now
+            
             if (dx > 0)
                 moveDir = 1.f;
             else if (dx < 0)
                 moveDir = -1.f;
 
-            velocity.x = moveSpeed * moveDir * 0.5f;  // Half speed when approaching
             sprite.setPosition(position);
         }
     }
