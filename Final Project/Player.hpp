@@ -26,7 +26,7 @@ private:
     bool  showWalk    = false;
     bool  facingRight = true;
 
-    static constexpr float moveSpeed    = 150.f;
+    static constexpr float moveSpeed    = 200.f;
     static constexpr float jumpStrength = -200.f;
     static constexpr float animInterval = 0.15f;
 

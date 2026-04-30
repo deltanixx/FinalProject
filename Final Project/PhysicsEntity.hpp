@@ -17,7 +17,7 @@ protected:
     sf::Vector2f velocity;
     bool onGround = false;
 
-    static constexpr float gravity = 300.f;
+    static constexpr float gravity = 800.f;
 
     /// Applies gravity then resolves tile collisions, updating position and velocity in place.
     void applyPhysics(float deltaTime, const World& world);
