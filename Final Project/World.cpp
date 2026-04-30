@@ -82,11 +82,13 @@ void World::generateWorld(sf::RenderWindow& window)
         for (int j = 0; j < cols; j++)
             worldMatrix[i][j] = 0;
 
+    std::vector<int> surfaceRows(cols);
     for (int j = 0; j < cols; j++)
     {
         float nx = (float)j / cols * 10.f;
         float n = octaveNoise(nx, 6, 0.55f);
         int surfaceRow = std::clamp(midRow + (int)(n * amplitude), 1, rows - 2);
+        surfaceRows[j] = surfaceRow;
 
         worldMatrix[surfaceRow][j] = 2;
         for (int i = surfaceRow + 1; i < rows; i++)
@@ -102,6 +104,15 @@ void World::generateWorld(sf::RenderWindow& window)
             if (worldMatrix[i][j] == 0) continue; // skip air tiles
             sf::Sprite sprite = dynamic_cast<Block*>(Item::getItem(worldMatrix[i][j]))->getSprite();
             sprite.setPosition({ (float)(j * TILE_SIZE), (float)(i * TILE_SIZE) });
+
+            // darken dirt tiles based on how far below the surface they are
+            if (worldMatrix[i][j] == 1)
+            {
+                int depth = i - surfaceRows[j];
+                uint8_t brightness = (uint8_t)std::max(20, 255 - depth * 12);
+                sprite.setColor(sf::Color(brightness, brightness, brightness));
+            }
+
             spriteCache.push_back(sprite);
         }
     }
