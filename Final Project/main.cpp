@@ -18,8 +18,9 @@ int main()
     World world = World();
     world.generateWorld(window);
 
-    Enemy       enemy1("./Assets/Enemy/Enemy.jpg");
-    Player      player;
+
+    Enemy enemy1("./Assets/Enemy/Enemy.png");
+    Player player;
     float worldCenterX = world.getSize().x / 2.f;
     player.setPosition({ worldCenterX, 50.f });
     enemy1.setPosition({ worldCenterX + 200.f, 50.f });
@@ -41,8 +42,21 @@ int main()
                 window.close();
         }
 
-        enemy1.update(deltaTime, world);
+
+        // Get player position ONCE per frame
+        sf::Vector2f playerPos = player.getPosition();
+
+        // Check if enemy can see player (simplified - always true for now)
+        bool canSeePlayer = true;
+
+        // Get enemy position
+        sf::Vector2f enemyPos = enemy1.getPosition();
+
+        // Update player
         player.update(deltaTime, world);
+
+        // Update enemy with chase logic
+        enemy1.update(canSeePlayer, playerPos, enemyPos, deltaTime, world);
 
         // Centre camera on player, clamped so it never shows outside the world
         sf::FloatRect  pb        = player.getBounds();

@@ -8,10 +8,16 @@ public:
     void draw(sf::RenderWindow& window) override;
     void update(float deltaTime, const World& world) override;
 
+    sf::Vector2f getPosition() const;
+
 private:
     sf::Texture idleTexture;
     sf::Texture walkTexture;
     sf::Sprite  sprite;
+
+    sf::Vector2f playerPosition; //For enemy pathfinding
+
+    int health;
 
     sf::Vector2f spriteOffset; // offsets sprite render from physics box to compensate for texture padding
 

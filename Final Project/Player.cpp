@@ -91,3 +91,8 @@ void Player::update(float deltaTime, const World& world)
         sprite.setPosition(position + spriteOffset);
     }
 }
+
+sf::Vector2f Player::getPosition() const 
+{
+    return position;
+}
