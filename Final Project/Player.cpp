@@ -10,7 +10,7 @@ static constexpr int hotbarTypes[] = {1, 2}; // dirt, grass tile IDs
 
 Player::Player() : sprite(idleTexture), swordSprite(swordTexture), pickaxeSprite_(pickaxeTexture_), hurtSound(hurtBuffer)
 {
-    if (!hurtBuffer.loadFromFile("./Assets/Music/hurtSound.mp3")) {
+    if (!hurtBuffer.loadFromFile("./Assets/Sounds/hurtSound.mp3")) {
         std::cerr << "Could not load hurSound.mp3" << std::endl;
     }
 
