@@ -39,7 +39,7 @@ Player::Player() : sprite(idleTexture), swordSprite(swordTexture), pickaxeSprite
     pickaxeSprite_.setTexture(pickaxeTexture_, true);
     {
         sf::Vector2u sz = pickaxeTexture_.getSize();
-        float sc = (playerScale * TILE_SIZE * 1.1f) / static_cast<float>(sz.y);
+        float sc = (playerScale * TILE_SIZE * 0.75f) / static_cast<float>(sz.y);
         pickaxeSprite_.setScale({sc, sc});
         pickaxeSprite_.setOrigin({sz.x * 0.15f, sz.y * 0.82f});
     }
