@@ -2,7 +2,7 @@
 #include <iostream>
 
 Menu::Menu(float windowWidth, float windowHeight)
-    : selectedIndex(0), windowSize(windowWidth, windowHeight), hasBackground(false), m_backgroundSprite(m_backgroundTexture)
+    : selectedIndex(0), windowSize(windowWidth, windowHeight), hasBackground(false)
 {
     // Load font
     if (!font.openFromFile("./Assets/Fonts/PixelText.ttf")) {
@@ -13,12 +13,13 @@ Menu::Menu(float windowWidth, float windowHeight)
 void Menu::setBackgroundImage(const std::string& imagePath)
 {
     if (m_backgroundTexture.loadFromFile(imagePath)) {
-        m_backgroundSprite.setTexture(m_backgroundTexture);
+        // Create the sprite with the texture
+        m_backgroundSprite = sf::Sprite(m_backgroundTexture);
 
         // Scale background to fit window
         sf::Vector2f textureSize = static_cast<sf::Vector2f>(m_backgroundTexture.getSize());
         sf::Vector2f scale = { windowSize.x / textureSize.x, windowSize.y / textureSize.y };
-        m_backgroundSprite.setScale(scale);
+        m_backgroundSprite->setScale(scale);  // Use -> operator
 
         hasBackground = true;
         std::cout << "Background loaded: " << imagePath << std::endl;
@@ -78,7 +79,7 @@ void Menu::draw(sf::RenderWindow& window)
 {
     // Draw background image if loaded
     if (hasBackground) {
-        window.draw(m_backgroundSprite);
+        window.draw(*m_backgroundSprite);
     }
     else {
         // Fallback to colored background if no image
@@ -100,7 +101,7 @@ void Menu::draw(sf::RenderWindow& window)
     sf::Text control(font);
     control.setString("Controls:\nW = Up\nA = Left\nD = Right\nLeft Click = Mine\nZ = Attack\nP = Pause");
     control.setCharacterSize(40);
-    control.setFillColor(sf::Color::White);
+    control.setFillColor(sf::Color::Black);
     sf::FloatRect controlBounds = control.getLocalBounds();
     control.setOrigin({ controlBounds.size.x * 2.f - 30.f, controlBounds.size.y * -1.f - 30.f});
     control.setPosition({ windowSize.x / 2.f, 100.f });

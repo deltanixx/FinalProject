@@ -1,13 +1,14 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <optional>
 #include <string>
 
 class Menu {
 private:
     sf::Font font;
     sf::Texture m_backgroundTexture;  
-    sf::Sprite m_backgroundSprite;  
+    std::optional<sf::Sprite> m_backgroundSprite;
     std::vector<sf::Text> menuItems;
     int selectedIndex;
     sf::Vector2f windowSize;

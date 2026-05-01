@@ -41,11 +41,12 @@ int main()
     world.generateWorld(window);
 
     std::srand(static_cast<unsigned>(std::time(nullptr)));
-    const int   NUM_ENEMIES = 4;
+    const int   NUM_ENEMIES = 5;
     const float worldW      = world.getSize().x;
     std::vector<std::unique_ptr<Enemy>> enemies;
     enemies.reserve(NUM_ENEMIES + 1);
   
+
     for (int i = 0; i < NUM_ENEMIES; ++i) {
         auto e = std::make_unique<Enemy>("./Assets/Enemy/Enemy.png");
         float rx = 100.f + static_cast<float>(std::rand() % static_cast<int>(worldW - 200.f));
@@ -100,6 +101,8 @@ int main()
     // Block type for each hotbar slot (dirt=1, grass=2)
     static constexpr int slotTypes[] = {1, 2};
 
+
+
     sf::Font font;
     if (!font.openFromFile("./Assets/Fonts/PixelText.ttf"))
         std::cerr << "Failed to load font" << std::endl;
@@ -113,12 +116,14 @@ int main()
 
     sf::Clock deltaClock;
 
-
+    //Makes a menu
     Menu mainMenu(1280.f, 800.f);
     mainMenu.setBackgroundImage("./Assets/Enemy/background.png");
     mainMenu.addItem("Start Game");
     mainMenu.addItem("Quit");
 
+
+    //Interface for paused
     Menu pauseMenu(1280.f, 800.f);
     pauseMenu.addItem("Resume");
     pauseMenu.addItem("Main Menu");
@@ -134,7 +139,6 @@ int main()
     sf::FloatRect pauseBounds = pauseText.getLocalBounds();
     pauseText.setOrigin({ pauseBounds.size.x / 2.f, pauseBounds.size.y / 2.f });
     pauseText.setPosition({ viewSize.x / 2.f, viewSize.y / 2.f - 100.f });
-
     while (window.isOpen())
     {
         float deltaTime = deltaClock.restart().asSeconds();
