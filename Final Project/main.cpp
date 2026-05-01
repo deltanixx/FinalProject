@@ -134,6 +134,11 @@ int main()
         MusicPlayer music("./Assets/Music/theme.oga");
         menu.play();
 
+        sf::SoundBuffer placeBuffer;
+        if (!placeBuffer.loadFromFile("./Assets/Sounds/place.wav")) {
+            std::cerr << "Failed to load placement sound" << std::endl;
+        }
+        sf::Sound placeSound(placeBuffer);
 
     // Pause text
     sf::Text pauseText(font, "", 72);
@@ -305,6 +310,7 @@ int main()
                         if (!player.getBounds().findIntersection(tileBounds)) {
                             int tileType = slotTypes[player.getSelectedSlot()];
                             if (player.removeFromInventory(tileType, 1)) {
+                                placeSound.play();
                                 world.setTile(row, col, tileType);
                                 placeCooldown = placeInterval;
                             }
