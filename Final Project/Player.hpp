@@ -71,7 +71,15 @@ private:
     std::vector<Projectile> projectiles;
     void updateProjectiles(float dt);
 
+    // Pickaxe — texture declared before sprite so init-list order is safe
     sf::Texture  pickaxeTexture_;
+    sf::Sprite   pickaxeSprite_;
+    bool  pickaxeSwinging_ = false;
+    float pickaxeTimer_    = 0.f;
+    static constexpr float pickaxeDuration_   = 0.28f;
+    static constexpr float pickaxeStartAngle_ = -75.f;
+    static constexpr float pickaxeEndAngle_   =  45.f;
+
     std::unordered_map<int, int> inventory_;
     int selectedSlot_ = 0;
 

@@ -8,7 +8,7 @@
 
 static constexpr int hotbarTypes[] = {1, 2}; // dirt, grass tile IDs
 
-Player::Player() : sprite(idleTexture), swordSprite(swordTexture)
+Player::Player() : sprite(idleTexture), swordSprite(swordTexture), pickaxeSprite_(pickaxeTexture_)
 {
     if (!idleTexture.loadFromFile("./Assets/Player/player_idle.png"))
         std::cerr << "Failed to load player idle" << std::endl;
@@ -36,6 +36,13 @@ Player::Player() : sprite(idleTexture), swordSprite(swordTexture)
 
     if (!pickaxeTexture_.loadFromFile("./Assets/Items/Copper_Pickaxe.png"))
         std::cerr << "Failed to load pickaxe" << std::endl;
+    pickaxeSprite_.setTexture(pickaxeTexture_, true);
+    {
+        sf::Vector2u sz = pickaxeTexture_.getSize();
+        float sc = (playerScale * TILE_SIZE * 1.1f) / static_cast<float>(sz.y);
+        pickaxeSprite_.setScale({sc, sc});
+        pickaxeSprite_.setOrigin({sz.x * 0.15f, sz.y * 0.82f});
+    }
 
     if (!swordTexture.loadFromFile("./Assets/Items/Greatsword of Death.png"))
         std::cerr << "Failed to load sword" << std::endl;
@@ -73,6 +80,8 @@ void Player::draw(sf::RenderWindow& window)
         if (p.lifetime > 0.f)
             window.draw(p.sprite);
     window.draw(sprite);
+    if (pickaxeSwinging_)
+        window.draw(pickaxeSprite_);
     if (swordSwinging)
         window.draw(swordSprite);
 }
@@ -206,6 +215,36 @@ void Player::update(float deltaTime, const World& world)
 
     if (jump && onGround)
         velocity.y = jumpStrength;
+
+    // Pickaxe swing — plays continuously while left click is held
+    bool minePressed = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+    if (minePressed) {
+        if (!pickaxeSwinging_) {
+            pickaxeSwinging_ = true;
+            pickaxeTimer_    = pickaxeDuration_;
+        }
+    } else {
+        pickaxeSwinging_ = false;
+        pickaxeTimer_    = 0.f;
+    }
+
+    if (pickaxeSwinging_) {
+        pickaxeTimer_ -= deltaTime;
+        if (pickaxeTimer_ <= 0.f) {
+            pickaxeTimer_ = pickaxeDuration_; // loop while held
+        }
+        float progress = 1.f - (pickaxeTimer_ / pickaxeDuration_);
+        float angle    = pickaxeStartAngle_ + (pickaxeEndAngle_ - pickaxeStartAngle_) * progress;
+
+        sf::Vector2f pivot = position + (facingRight
+            ? sf::Vector2f(size.x * 0.75f, size.y * 0.35f)
+            : sf::Vector2f(size.x * 0.25f, size.y * 0.35f));
+
+        float sc = std::abs(pickaxeSprite_.getScale().y);
+        pickaxeSprite_.setScale({facingRight ? sc : -sc, sc});
+        pickaxeSprite_.setRotation(sf::degrees(facingRight ? angle : -angle));
+        pickaxeSprite_.setPosition(pivot);
+    }
 
     bool attackPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z);
     if (attackPressed && !swordSwinging && !swordJustHeld) {
