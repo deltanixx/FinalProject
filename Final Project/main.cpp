@@ -62,8 +62,7 @@ int main()
     player.setPosition({ worldCenterX, 50.f });
     player.setSpawnPosition({ worldCenterX, 50.f });
 
-    MusicPlayer music("./Assets/Music/theme.oga");
-    music.play();
+    
 
     // Synthesized mining click sound
     sf::SoundBuffer mineBuffer;
@@ -131,6 +130,11 @@ int main()
 
     GameState gameState = MENU;  // Start in menu
 
+        MusicPlayer menu("./Assets/Music/menu.mp3");
+        MusicPlayer music("./Assets/Music/theme.oga");
+        menu.play();
+
+
     // Pause text
     sf::Text pauseText(font, "", 72);
     pauseText.setFillColor(sf::Color::White);
@@ -141,6 +145,7 @@ int main()
     pauseText.setPosition({ viewSize.x / 2.f, viewSize.y / 2.f - 100.f });
     while (window.isOpen())
     {
+
         float deltaTime = deltaClock.restart().asSeconds();
 
         while (const std::optional event = window.pollEvent())
@@ -167,6 +172,8 @@ int main()
                         if (selected == 0) // Start Game
                         {
                             gameState = PLAYING;
+                            menu.stop();
+                            music.play();
                             // Reset game state
                             player.setPosition({ worldCenterX, 50.f });
                             enemies.clear();
@@ -203,6 +210,8 @@ int main()
                         else if (selected == 1) // Main Menu
                         {
                             gameState = MENU;
+                            music.stop();
+                            menu.play();
                             // Reset game state for next play
                             player.setPosition({ worldCenterX, 50.f });
                             enemies.clear();
