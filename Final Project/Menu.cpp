@@ -1,7 +1,8 @@
 #include "Menu.hpp"
 #include <iostream>
 
-Menu::Menu(float windowWidth, float windowHeight) : selectedIndex(0), windowSize(windowWidth, windowHeight)
+Menu::Menu(float windowWidth, float windowHeight)
+    : selectedIndex(0), windowSize(windowWidth, windowHeight), hasBackground(false), m_backgroundSprite(m_backgroundTexture)
 {
     // Load font
     if (!font.openFromFile("./Assets/Fonts/PixelText.ttf")) {
@@ -9,10 +10,28 @@ Menu::Menu(float windowWidth, float windowHeight) : selectedIndex(0), windowSize
     }
 }
 
+void Menu::setBackgroundImage(const std::string& imagePath)
+{
+    if (m_backgroundTexture.loadFromFile(imagePath)) {
+        m_backgroundSprite.setTexture(m_backgroundTexture);
+
+        // Scale background to fit window
+        sf::Vector2f textureSize = static_cast<sf::Vector2f>(m_backgroundTexture.getSize());
+        sf::Vector2f scale = { windowSize.x / textureSize.x, windowSize.y / textureSize.y };
+        m_backgroundSprite.setScale(scale);
+
+        hasBackground = true;
+        std::cout << "Background loaded: " << imagePath << std::endl;
+    }
+    else {
+        std::cerr << "Failed to load background: " << imagePath << std::endl;
+        hasBackground = false;
+    }
+}
+
 void Menu::addItem(const std::string& text)
 {
     sf::Text menuItem(font);
-    menuItem.setFont(font);
     menuItem.setString(text);
     menuItem.setCharacterSize(48);
     menuItem.setFillColor(sf::Color::White);
@@ -57,14 +76,19 @@ int Menu::getSelectedItem() const
 
 void Menu::draw(sf::RenderWindow& window)
 {
-    // Draw background (optional)
-    sf::RectangleShape background(sf::Vector2f(windowSize.x, windowSize.y));
-    background.setFillColor(sf::Color(50, 50, 50, 200));  // Semi-transparent dark
-    window.draw(background);
+    // Draw background image if loaded
+    if (hasBackground) {
+        window.draw(m_backgroundSprite);
+    }
+    else {
+        // Fallback to colored background if no image
+        sf::RectangleShape background(sf::Vector2f(windowSize.x, windowSize.y));
+        background.setFillColor(sf::Color(50, 50, 50, 200));
+        window.draw(background);
+    }
 
     // Draw title
     sf::Text title(font);
-    title.setFont(font);
     title.setString("Pixel Game");
     title.setCharacterSize(72);
     title.setFillColor(sf::Color::Green);
