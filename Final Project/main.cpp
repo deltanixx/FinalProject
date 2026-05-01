@@ -22,7 +22,6 @@ int main()
     Assets::loadTextures();
     Item::loadItems();
 
-    // Day/night cycle
     DayNightCycle cycle(120.f);
     cycle.setSunTexture(&Assets::getTexture(3));
     cycle.setMoonTexture(&Assets::getTexture(4));
@@ -30,12 +29,11 @@ int main()
     World world = World();
     world.generateWorld(window);
 
-    // Spawn enemies at random X positions
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     const int   NUM_ENEMIES = 4;
     const float worldW      = world.getSize().x;
     std::vector<std::unique_ptr<Enemy>> enemies;
-    enemies.reserve(NUM_ENEMIES + 1); // +1 for eventual boss
+    enemies.reserve(NUM_ENEMIES + 1);
     for (int i = 0; i < NUM_ENEMIES; ++i) {
         auto e = std::make_unique<Enemy>("./Assets/Enemy/Enemy.png");
         float rx = 100.f + static_cast<float>(std::rand() % static_cast<int>(worldW - 200.f));
@@ -81,7 +79,6 @@ int main()
             e->update(deltaTime, world);
         player.update(deltaTime, world);
 
-        // Boss spawn timer
         if (!bossSpawned) {
             bossTimer -= deltaTime;
             if (bossTimer <= 0.f) {
@@ -94,7 +91,6 @@ int main()
             }
         }
 
-        // Sword melee hits enemy
         if (player.isSwordActive()) {
             sf::FloatRect sword = player.getSwordBounds();
             for (auto& e : enemies)
@@ -102,12 +98,10 @@ int main()
                     e->takeDamage(50);
         }
 
-        // Projectile hits enemy
         for (auto& e : enemies)
             if (e->isAlive() && player.consumeProjectileHit(e->getBounds()))
                 e->takeDamage(25);
 
-        // Dead regular enemies respawn at random position; boss stays dead
         for (auto& e : enemies) {
             if (!e->isAlive() && !e->isBoss()) {
                 float rx = 100.f + static_cast<float>(std::rand() % static_cast<int>(worldW - 200.f));
@@ -115,13 +109,11 @@ int main()
             }
         }
 
-        // Enemy contact damages player
         for (auto& e : enemies) {
             if (e->isAlive() && player.getBounds().findIntersection(e->getBounds()))
                 player.takeDamage(e->getContactDamage());
         }
 
-        // Centre camera on player
         sf::FloatRect pb       = player.getBounds();
         sf::Vector2f  worldSize = world.getSize();
         float cx = pb.position.x + pb.size.x / 2.f;
@@ -153,11 +145,9 @@ int main()
             e->drawHealthBar(window);
         player.draw(window);
 
-        // HUD in screen space
         window.setView(window.getDefaultView());
         player.drawHUD(window);
 
-        // FPS counter — top-right corner
         int fps = (deltaTime > 0.f) ? static_cast<int>(1.f / deltaTime) : 0;
         fpsText.setString(std::to_string(fps) + " FPS");
         sf::FloatRect tb = fpsText.getLocalBounds();

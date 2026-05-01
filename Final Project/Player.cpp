@@ -31,7 +31,6 @@ Player::Player() : sprite(idleTexture), swordSprite(swordTexture)
     spawnPosition = position;
     sprite.setPosition(position + spriteOffset);
 
-    // Sword sprite
     if (!swordTexture.loadFromFile("./Assets/Items/Greatsword of Death.png"))
         std::cerr << "Failed to load sword" << std::endl;
     swordSprite.setTexture(swordTexture, true);
@@ -39,11 +38,10 @@ Player::Player() : sprite(idleTexture), swordSprite(swordTexture)
         sf::Vector2u sz         = swordTexture.getSize();
         float        swordScale = (playerScale * TILE_SIZE * 1.7f) / static_cast<float>(sz.y);
         swordSprite.setScale({ swordScale, swordScale });
-        // Origin at the handle tip (bottom-left area of the diagonal sprite)
         swordSprite.setOrigin({ sz.x * 0.10f, sz.y * 0.88f });
     }
 
-    // Generate a synthetic swoosh: frequency sweep 600 → 150 Hz with sine envelope
+    // Synthesized swoosh: no sound file — frequency sweep 600→150 Hz with sine envelope
     {
         const unsigned   sampleRate = 44100;
         const float      dur        = 0.18f;
@@ -73,7 +71,6 @@ void Player::draw(sf::RenderWindow& window)
         window.draw(swordSprite);
 }
 
-/// Swaps between idle and walk textures while moving, resets to idle when still.
 void Player::updateAnimation(bool isMoving, float deltaTime)
 {
     if (isMoving)
@@ -175,7 +172,6 @@ void Player::drawHUD(sf::RenderWindow& window)
     window.draw(border);
 }
 
-/// Reads keyboard input, animates the sprite, flips it to face the direction of movement, and applies physics.
 void Player::update(float deltaTime, const World& world)
 {
     if (damageCooldown > 0.f)
@@ -204,7 +200,6 @@ void Player::update(float deltaTime, const World& world)
     if (jump && onGround)
         velocity.y = jumpStrength;
 
-    // Sword swing — triggered by Z or left mouse; one swing per press
     bool attackPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z) ||
                          sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
     if (attackPressed && !swordSwinging && !swordJustHeld) {
@@ -213,7 +208,6 @@ void Player::update(float deltaTime, const World& world)
         swordJustHeld = true;
         if (swooshSound) swooshSound->play();
 
-        // Spawn a projectile shaped like the sword flying in the facing direction
         Projectile proj(swordTexture);
         {
             sf::Vector2u sz       = swordTexture.getSize();
@@ -241,11 +235,9 @@ void Player::update(float deltaTime, const World& world)
             swordTimer    = 0.f;
         }
 
-        // progress 0 = start of swing, 1 = end
         float progress = 1.f - (swordTimer / swordDuration);
         float angle    = swordStartAngle + (swordEndAngle - swordStartAngle) * progress;
 
-        // Pivot: player's hand — upper area, on the facing side
         sf::Vector2f pivot = position + (facingRight
             ? sf::Vector2f(size.x * 0.75f, size.y * 0.35f)
             : sf::Vector2f(size.x * 0.25f, size.y * 0.35f));
