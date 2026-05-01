@@ -66,7 +66,7 @@ private:
     bool  facingRight = true;
 
     static constexpr float moveSpeed    = 200.f;
-    static constexpr float jumpStrength = -200.f;
+    static constexpr float jumpStrength = -300.f;
     static constexpr float animInterval = 0.15f;
 
     void updateAnimation(bool isMoving, float deltaTime);

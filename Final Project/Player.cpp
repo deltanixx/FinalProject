@@ -224,10 +224,10 @@ void Player::update(float deltaTime, const World& world)
                 ? sf::Vector2f(size.x * 0.75f, size.y * 0.35f)
                 : sf::Vector2f(size.x * 0.25f, size.y * 0.35f));
             proj.sprite.setPosition(hand);
-            const float projSpeed = 500.f;
+            const float projSpeed = 750.f;
             proj.velocity = { facingRight ? projSpeed : -projSpeed, -80.f };
-            // Rotate so the blade points in the direction of travel
-            proj.sprite.setRotation(sf::degrees(facingRight ? -45.f : 135.f));
+            // +45° CW rotates the upper-right blade to point right; -135° points it left
+            proj.sprite.setRotation(sf::degrees(facingRight ? 45.f : -135.f));
         }
         projectiles.push_back(std::move(proj));
     }
