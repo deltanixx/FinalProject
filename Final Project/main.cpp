@@ -35,13 +35,16 @@ int main()
     const int   NUM_ENEMIES = 4;
     const float worldW      = world.getSize().x;
     std::vector<std::unique_ptr<Enemy>> enemies;
-    enemies.reserve(NUM_ENEMIES);
+    enemies.reserve(NUM_ENEMIES + 1); // +1 for eventual boss
     for (int i = 0; i < NUM_ENEMIES; ++i) {
         auto e = std::make_unique<Enemy>("./Assets/Enemy/Enemy.png");
         float rx = 100.f + static_cast<float>(std::rand() % static_cast<int>(worldW - 200.f));
         e->setPosition({ rx, 50.f });
         enemies.push_back(std::move(e));
     }
+
+    float bossTimer    = 60.f;
+    bool  bossSpawned  = false;
 
     Player player;
     float worldCenterX = worldW / 2.f;
@@ -78,21 +81,44 @@ int main()
             e->update(deltaTime, world);
         player.update(deltaTime, world);
 
-        // Sword hits enemy → kill and respawn at new random position
+        // Boss spawn timer
+        if (!bossSpawned) {
+            bossTimer -= deltaTime;
+            if (bossTimer <= 0.f) {
+                auto boss = std::make_unique<Enemy>("./Assets/Enemy/Enemy.png");
+                boss->setAsBoss();
+                float rx = 100.f + static_cast<float>(std::rand() % static_cast<int>(worldW - 200.f));
+                boss->setPosition({ rx, 50.f });
+                enemies.push_back(std::move(boss));
+                bossSpawned = true;
+            }
+        }
+
+        // Sword melee hits enemy
         if (player.isSwordActive()) {
             sf::FloatRect sword = player.getSwordBounds();
-            for (auto& e : enemies) {
-                if (e->isAlive() && sword.findIntersection(e->getBounds())) {
-                    float rx = 100.f + static_cast<float>(std::rand() % static_cast<int>(worldW - 200.f));
-                    e->respawn({ rx, 50.f });
-                }
+            for (auto& e : enemies)
+                if (e->isAlive() && sword.findIntersection(e->getBounds()))
+                    e->takeDamage(50);
+        }
+
+        // Projectile hits enemy
+        for (auto& e : enemies)
+            if (e->isAlive() && player.consumeProjectileHit(e->getBounds()))
+                e->takeDamage(25);
+
+        // Dead regular enemies respawn at random position; boss stays dead
+        for (auto& e : enemies) {
+            if (!e->isAlive() && !e->isBoss()) {
+                float rx = 100.f + static_cast<float>(std::rand() % static_cast<int>(worldW - 200.f));
+                e->respawn({ rx, 50.f });
             }
         }
 
         // Enemy contact damages player
         for (auto& e : enemies) {
             if (e->isAlive() && player.getBounds().findIntersection(e->getBounds()))
-                player.takeDamage(10);
+                player.takeDamage(e->getContactDamage());
         }
 
         // Centre camera on player
@@ -123,6 +149,8 @@ int main()
         world.Draw(window);
         for (auto& e : enemies)
             e->draw(window);
+        for (auto& e : enemies)
+            e->drawHealthBar(window);
         player.draw(window);
 
         // HUD in screen space
