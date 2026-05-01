@@ -89,13 +89,22 @@ void Menu::draw(sf::RenderWindow& window)
 
     // Draw title
     sf::Text title(font);
-    title.setString("Pixel Game");
+    title.setString("Terraria 2");
     title.setCharacterSize(72);
     title.setFillColor(sf::Color::Green);
     sf::FloatRect titleBounds = title.getLocalBounds();
     title.setOrigin({ titleBounds.size.x / 2.f, titleBounds.size.y / 2.f });
     title.setPosition({ windowSize.x / 2.f, 100.f });
     window.draw(title);
+
+    sf::Text control(font);
+    control.setString("Controls:\nW = Up\nA = Left\nD = Right\nLeft Click = Mine\nZ = Attack\nP = Pause");
+    control.setCharacterSize(40);
+    control.setFillColor(sf::Color::White);
+    sf::FloatRect controlBounds = control.getLocalBounds();
+    control.setOrigin({ controlBounds.size.x * 2.f - 30.f, controlBounds.size.y * -1.f - 30.f});
+    control.setPosition({ windowSize.x / 2.f, 100.f });
+    window.draw(control);
 
     // Draw menu items
     for (auto& item : menuItems) {

@@ -45,6 +45,7 @@ int main()
     const float worldW      = world.getSize().x;
     std::vector<std::unique_ptr<Enemy>> enemies;
     enemies.reserve(NUM_ENEMIES + 1);
+  
     for (int i = 0; i < NUM_ENEMIES; ++i) {
         auto e = std::make_unique<Enemy>("./Assets/Enemy/Enemy.png");
         float rx = 100.f + static_cast<float>(std::rand() % static_cast<int>(worldW - 200.f));
