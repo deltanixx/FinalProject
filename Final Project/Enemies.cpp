@@ -20,8 +20,21 @@ Enemy::Enemy(const std::string& imagePath) : sprite(texture)
     velocity = sf::Vector2f(0.f, 0.f);
 }
 
+bool Enemy::isAlive() const { return alive; }
+
+void Enemy::kill() { alive = false; }
+
+void Enemy::respawn(sf::Vector2f newPosition)
+{
+    alive    = true;
+    velocity = sf::Vector2f(0.f, 0.f);
+    setPosition(newPosition);
+}
+
 void Enemy::update(float deltaTime, const World& world)
 {
+    if (!alive) return;
+
     velocity.x = moveSpeed * moveDir;
     applyPhysics(deltaTime, world);
 
@@ -33,6 +46,7 @@ void Enemy::update(float deltaTime, const World& world)
 
 void Enemy::draw(sf::RenderWindow& window)
 {
+    if (!alive) return;
     window.draw(sprite);
 }
 

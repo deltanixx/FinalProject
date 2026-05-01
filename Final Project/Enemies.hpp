@@ -16,12 +16,17 @@ public:
     sf::Vector2f setPosition(const sf::Vector2f& newPosition);
 
     bool chasePlayer(sf::Vector2f playerPosition, sf::Vector2f enemyPosition);
+    bool isAlive() const;
+    void kill();
+    void respawn(sf::Vector2f newPosition);
+
 private:
     sf::Texture texture;
     sf::Sprite  sprite;
     float       moveDir = 1.f;
+    bool        alive   = true;
 
-    sf::Vector2f enemyPosition; //For enemy pathfinding
+    sf::Vector2f enemyPosition;
 
     static constexpr float moveSpeed = 25.f;
 };
