@@ -1,5 +1,7 @@
 #pragma once
+#include <array>
 #include <optional>
+#include <unordered_map>
 #include <vector>
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
@@ -23,6 +25,15 @@ public:
     bool          isSwordActive()                              const;
     bool          consumeProjectileHit(const sf::FloatRect& target);
     void          setAimPosition(sf::Vector2f worldPos);
+
+    void addToInventory(int tileType, int count);
+    bool removeFromInventory(int tileType, int count);
+    int  getInventoryCount(int tileType) const;
+    int  getSelectedSlot() const;
+    void setSelectedSlot(int slot);
+    void drawHotbar(sf::RenderWindow& window, const sf::Font& font);
+
+    static constexpr int hotbarSlotCount = 2;
 
 private:
     sf::Texture idleTexture;
@@ -59,6 +70,10 @@ private:
     };
     std::vector<Projectile> projectiles;
     void updateProjectiles(float dt);
+
+    sf::Texture  pickaxeTexture_;
+    std::unordered_map<int, int> inventory_;
+    int selectedSlot_ = 0;
 
     sf::Vector2f spriteOffset;
 

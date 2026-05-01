@@ -68,6 +68,32 @@ void World::Draw(sf::RenderWindow& window)
         window.draw(sprite);
 }
 
+void World::buildSpriteCache()
+{
+    const int rows = (int)worldMatrix.size();
+    const int cols = (int)worldMatrix[0].size();
+
+    spriteCache.clear();
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            if (worldMatrix[i][j] == 0) continue;
+            sf::Sprite sprite = dynamic_cast<Block*>(Item::getItem(worldMatrix[i][j]))->getSprite();
+            sprite.setPosition({ (float)(j * TILE_SIZE), (float)(i * TILE_SIZE) });
+
+            if (worldMatrix[i][j] == 1 && j < (int)surfaceRows_.size())
+            {
+                int depth = i - surfaceRows_[j];
+                uint8_t brightness = (uint8_t)std::max(20, 255 - depth * 25);
+                sprite.setColor(sf::Color(brightness, brightness, brightness));
+            }
+
+            spriteCache.push_back(sprite);
+        }
+    }
+}
+
 /// Procedurally generates terrain using layered Perlin noise, placing grass at the surface and dirt below.
 void World::generateWorld(sf::RenderWindow& window)
 {
@@ -82,42 +108,36 @@ void World::generateWorld(sf::RenderWindow& window)
         for (int j = 0; j < cols; j++)
             worldMatrix[i][j] = 0;
 
-    std::vector<int> surfaceRows(cols);
+    surfaceRows_.resize(cols);
     for (int j = 0; j < cols; j++)
     {
         float nx = (float)j / cols * 10.f;
         float n = octaveNoise(nx, 6, 0.55f);
         int surfaceRow = std::clamp(midRow + (int)(n * amplitude), 1, rows - 2);
-        surfaceRows[j] = surfaceRow;
+        surfaceRows_[j] = surfaceRow;
 
         worldMatrix[surfaceRow][j] = 2;
         for (int i = surfaceRow + 1; i < rows; i++)
             worldMatrix[i][j] = 1;
     }
 
-    // Build sprite cache — done once here so Draw has zero per-frame overhead
-    spriteCache.clear();
-    for (int i = 0; i < rows; i++)
-    {
-        for (int j = 0; j < cols; j++)
-        {
-            if (worldMatrix[i][j] == 0) continue; // skip air tiles
-            sf::Sprite sprite = dynamic_cast<Block*>(Item::getItem(worldMatrix[i][j]))->getSprite();
-            sprite.setPosition({ (float)(j * TILE_SIZE), (float)(i * TILE_SIZE) });
-
-            // darken dirt tiles based on how far below the surface they are
-            if (worldMatrix[i][j] == 1)
-            {
-                int depth = i - surfaceRows[j];
-                uint8_t brightness = (uint8_t)std::max(20, 255 - depth * 25);
-                sprite.setColor(sf::Color(brightness, brightness, brightness));
-            }
-
-            spriteCache.push_back(sprite);
-        }
-    }
-
+    buildSpriteCache();
     std::cout << "World Generated" << std::endl;
+}
+
+int World::getTile(int row, int col) const
+{
+    if (row < 0 || row >= (int)worldMatrix.size())    return 0;
+    if (col < 0 || col >= (int)worldMatrix[0].size()) return 0;
+    return worldMatrix[row][col];
+}
+
+void World::setTile(int row, int col, int type)
+{
+    if (row < 0 || row >= (int)worldMatrix.size())    return;
+    if (col < 0 || col >= (int)worldMatrix[0].size()) return;
+    worldMatrix[row][col] = type;
+    buildSpriteCache();
 }
 
 bool World::isSolid(int row, int col) const

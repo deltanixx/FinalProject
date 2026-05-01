@@ -1,9 +1,12 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <ctime>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 #include "Enemies.hpp"
@@ -52,6 +55,42 @@ int main()
     MusicPlayer music("./Assets/Music/theme.oga");
     music.play();
 
+    // Synthesized mining click sound
+    sf::SoundBuffer mineBuffer;
+    {
+        const unsigned sampleRate = 44100;
+        const float    dur        = 0.07f;
+        const auto     n          = static_cast<std::uint64_t>(sampleRate * dur);
+        std::vector<std::int16_t> samples(n);
+        for (std::uint64_t i = 0; i < n; ++i) {
+            float progress = static_cast<float>(i) / static_cast<float>(n);
+            float envelope = std::exp(-progress * 28.f);
+            float freq     = 380.f - 180.f * progress;
+            samples[i] = static_cast<std::int16_t>(
+                std::sin(2.f * 3.14159265f * freq * static_cast<float>(i) / sampleRate)
+                * envelope * 32767.f * 0.45f);
+        }
+        if (!mineBuffer.loadFromSamples(samples.data(), n, 1, sampleRate, {sf::SoundChannel::Mono}))
+            std::cerr << "Failed to generate mine sound" << std::endl;
+    }
+    sf::Sound mineSound(mineBuffer);
+
+    // Mining state
+    int   mineRow          = -1;
+    int   mineCol          = -1;
+    float mineProgress     = 0.f;
+    float mineTimer        = 0.f;
+    const float mineInterval     = 0.25f;
+    const int   mineHitsRequired = 3;
+    const float mineRange        = static_cast<float>(TILE_SIZE) * 9.f;
+
+    // Placement cooldown
+    float placeCooldown    = 0.f;
+    const float placeInterval = 0.15f;
+
+    // Block type for each hotbar slot (dirt=1, grass=2)
+    static constexpr int slotTypes[] = {1, 2};
+
     sf::Font font;
     if (!font.openFromFile("./Assets/Fonts/PixelText.ttf"))
         std::cerr << "Failed to load font" << std::endl;
@@ -73,12 +112,79 @@ int main()
         {
             if (event->is<sf::Event::Closed>())
                 window.close();
+
+            if (auto* scroll = event->getIf<sf::Event::MouseWheelScrolled>()) {
+                int dir = (scroll->delta > 0) ? -1 : 1;
+                player.setSelectedSlot(player.getSelectedSlot() + dir);
+            }
         }
 
         for (auto& e : enemies)
             e->update(deltaTime, world);
         player.setAimPosition(window.mapPixelToCoords(sf::Mouse::getPosition(window), camera));
         player.update(deltaTime, world);
+
+        if (placeCooldown > 0.f) placeCooldown -= deltaTime;
+
+        sf::Vector2f mouseWorld = window.mapPixelToCoords(sf::Mouse::getPosition(window), camera);
+
+        // Mining — left click, 3 hits to break a tile
+        {
+            sf::FloatRect pb      = player.getBounds();
+            sf::Vector2f  pcenter = {pb.position.x + pb.size.x * 0.5f, pb.position.y + pb.size.y * 0.5f};
+            int col = static_cast<int>(mouseWorld.x / TILE_SIZE);
+            int row = static_cast<int>(mouseWorld.y / TILE_SIZE);
+            float dx = mouseWorld.x - pcenter.x;
+            float dy = mouseWorld.y - pcenter.y;
+            float dist = std::sqrt(dx * dx + dy * dy);
+
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) &&
+                world.isSolid(row, col) && dist <= mineRange)
+            {
+                if (row != mineRow || col != mineCol) {
+                    mineRow = row; mineCol = col;
+                    mineProgress = 0.f; mineTimer = 0.f;
+                }
+                mineTimer += deltaTime;
+                if (mineTimer >= mineInterval) {
+                    mineTimer -= mineInterval;
+                    mineProgress += 1.f;
+                    mineSound.play();
+                    if (mineProgress >= static_cast<float>(mineHitsRequired)) {
+                        int tileType = world.getTile(mineRow, mineCol);
+                        world.setTile(mineRow, mineCol, 0);
+                        player.addToInventory(tileType, 1);
+                        mineRow = -1; mineCol = -1;
+                        mineProgress = 0.f;
+                    }
+                }
+            } else if (!sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+                mineRow = -1; mineCol = -1;
+                mineProgress = 0.f; mineTimer = 0.f;
+            }
+        }
+
+        // Block placement — right click
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) && placeCooldown <= 0.f) {
+            int col = static_cast<int>(mouseWorld.x / TILE_SIZE);
+            int row = static_cast<int>(mouseWorld.y / TILE_SIZE);
+            if (!world.isSolid(row, col)) {
+                bool adj = world.isSolid(row - 1, col) || world.isSolid(row + 1, col) ||
+                           world.isSolid(row, col - 1) || world.isSolid(row, col + 1);
+                if (adj) {
+                    sf::FloatRect tileBounds({static_cast<float>(col * TILE_SIZE),
+                                              static_cast<float>(row * TILE_SIZE)},
+                                             {TILE_SIZE, TILE_SIZE});
+                    if (!player.getBounds().findIntersection(tileBounds)) {
+                        int tileType = slotTypes[player.getSelectedSlot()];
+                        if (player.removeFromInventory(tileType, 1)) {
+                            world.setTile(row, col, tileType);
+                            placeCooldown = placeInterval;
+                        }
+                    }
+                }
+            }
+        }
 
         if (!bossSpawned) {
             bossTimer -= deltaTime;
@@ -140,6 +246,29 @@ int main()
         window.draw(sun);
         window.draw(moon);
         world.Draw(window);
+
+        // Mining progress overlay
+        if (mineRow >= 0 && mineCol >= 0) {
+            float progress = mineProgress / static_cast<float>(mineHitsRequired);
+            float tx = static_cast<float>(mineCol * TILE_SIZE);
+            float ty = static_cast<float>(mineRow * TILE_SIZE);
+
+            sf::RectangleShape overlay({TILE_SIZE, TILE_SIZE});
+            overlay.setPosition({tx, ty});
+            overlay.setFillColor(sf::Color(0, 0, 0, static_cast<std::uint8_t>(progress * 160)));
+            window.draw(overlay);
+
+            sf::RectangleShape barBg({TILE_SIZE, 3.f});
+            barBg.setPosition({tx, ty + TILE_SIZE + 1.f});
+            barBg.setFillColor(sf::Color(60, 60, 60, 200));
+            window.draw(barBg);
+
+            sf::RectangleShape barFill({TILE_SIZE * progress, 3.f});
+            barFill.setPosition({tx, ty + TILE_SIZE + 1.f});
+            barFill.setFillColor(sf::Color(255, 200, 50, 220));
+            window.draw(barFill);
+        }
+
         for (auto& e : enemies)
             e->draw(window);
         for (auto& e : enemies)
@@ -148,6 +277,7 @@ int main()
 
         window.setView(window.getDefaultView());
         player.drawHUD(window);
+        player.drawHotbar(window, font);
 
         int fps = (deltaTime > 0.f) ? static_cast<int>(1.f / deltaTime) : 0;
         fpsText.setString(std::to_string(fps) + " FPS");

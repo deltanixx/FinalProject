@@ -22,11 +22,19 @@ public:
 	/// Returns true if the tile at (row, col) is solid. Out-of-bounds tiles are treated as air.
 	bool isSolid(int row, int col) const;
 
+	/// Returns the tile type at (row, col), or 0 for out-of-bounds.
+	int  getTile(int row, int col) const;
+
+	/// Sets the tile at (row, col) to type and rebuilds the sprite cache.
+	void setTile(int row, int col, int type);
+
 	/// Moves pos by vel*dt on each axis separately and pushes the entity out of any solid tiles.
 	/// Sets onGround=true when resting on a surface, zeroes the relevant velocity component on impact.
 	void resolveCollision(sf::Vector2f& pos, const sf::Vector2f& size, sf::Vector2f& vel, bool& onGround, float deltaTime) const;
 
 private:
 	std::vector<std::vector<int>> worldMatrix;
-	std::vector<sf::Sprite> spriteCache; // pre-built, positioned sprites — rebuilt in generateWorld
+	std::vector<sf::Sprite> spriteCache;
+	std::vector<int> surfaceRows_;
+	void buildSpriteCache();
 };

@@ -1,9 +1,12 @@
 #include "Player.hpp"
+#include "AssetManager.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <iostream>
 #include <vector>
+
+static constexpr int hotbarTypes[] = {1, 2}; // dirt, grass tile IDs
 
 Player::Player() : sprite(idleTexture), swordSprite(swordTexture)
 {
@@ -30,6 +33,9 @@ Player::Player() : sprite(idleTexture), swordSprite(swordTexture)
     position      = sf::Vector2f(200.f, 50.f);
     spawnPosition = position;
     sprite.setPosition(position + spriteOffset);
+
+    if (!pickaxeTexture_.loadFromFile("./Assets/Items/Copper_Pickaxe.png"))
+        std::cerr << "Failed to load pickaxe" << std::endl;
 
     if (!swordTexture.loadFromFile("./Assets/Items/Greatsword of Death.png"))
         std::cerr << "Failed to load sword" << std::endl;
@@ -201,8 +207,7 @@ void Player::update(float deltaTime, const World& world)
     if (jump && onGround)
         velocity.y = jumpStrength;
 
-    bool attackPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z) ||
-                         sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+    bool attackPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z);
     if (attackPressed && !swordSwinging && !swordJustHeld) {
         swordSwinging = true;
         swordTimer    = swordDuration;
@@ -273,7 +278,89 @@ void Player::update(float deltaTime, const World& world)
     }
 }
 
-sf::Vector2f Player::getPosition() const 
+sf::Vector2f Player::getPosition() const
 {
     return position;
+}
+
+void Player::addToInventory(int tileType, int count)
+{
+    inventory_[tileType] += count;
+}
+
+bool Player::removeFromInventory(int tileType, int count)
+{
+    auto it = inventory_.find(tileType);
+    if (it == inventory_.end() || it->second < count) return false;
+    it->second -= count;
+    return true;
+}
+
+int Player::getInventoryCount(int tileType) const
+{
+    auto it = inventory_.find(tileType);
+    return (it != inventory_.end()) ? it->second : 0;
+}
+
+int  Player::getSelectedSlot() const { return selectedSlot_; }
+void Player::setSelectedSlot(int slot) { selectedSlot_ = std::clamp(slot, 0, hotbarSlotCount - 1); }
+
+void Player::drawHotbar(sf::RenderWindow& window, const sf::Font& font)
+{
+    const float slotSize = 40.f;
+    const float gap      = 4.f;
+    const float totalW   = hotbarSlotCount * slotSize + (hotbarSlotCount - 1) * gap;
+    sf::Vector2f viewSize = window.getDefaultView().getSize();
+    float startX = (viewSize.x - totalW) / 2.f;
+    float startY = viewSize.y - slotSize - 10.f;
+
+    // Pickaxe icon to the left of block slots
+    {
+        float iconX = startX - slotSize - gap;
+        sf::RectangleShape bg({slotSize, slotSize});
+        bg.setPosition({iconX, startY});
+        bg.setFillColor(sf::Color(40, 40, 40, 200));
+        bg.setOutlineColor(sf::Color(180, 130, 50));
+        bg.setOutlineThickness(2.f);
+        window.draw(bg);
+
+        if (pickaxeTexture_.getSize().x > 0) {
+            sf::Sprite icon(pickaxeTexture_);
+            sf::Vector2u sz = pickaxeTexture_.getSize();
+            float sc = (slotSize - 8.f) / static_cast<float>(std::max(sz.x, sz.y));
+            icon.setScale({sc, sc});
+            icon.setPosition({iconX + 4.f, startY + 4.f});
+            window.draw(icon);
+        }
+    }
+
+    for (int i = 0; i < hotbarSlotCount; ++i) {
+        float x = startX + i * (slotSize + gap);
+        int tileType = hotbarTypes[i];
+        int count    = getInventoryCount(tileType);
+
+        sf::RectangleShape bg({slotSize, slotSize});
+        bg.setPosition({x, startY});
+        bg.setFillColor(sf::Color(40, 40, 40, 200));
+        bool selected = (i == selectedSlot_);
+        bg.setOutlineColor(selected ? sf::Color::White : sf::Color(120, 120, 120));
+        bg.setOutlineThickness(selected ? 3.f : 1.5f);
+        window.draw(bg);
+
+        sf::Sprite blockSprite(Assets::getTexture(tileType));
+        sf::FloatRect tb = blockSprite.getLocalBounds();
+        float sc = (slotSize - 8.f) / std::max(tb.size.x, tb.size.y);
+        blockSprite.setScale({sc, sc});
+        blockSprite.setPosition({x + 4.f, startY + 4.f});
+        window.draw(blockSprite);
+
+        sf::Text countText(font, std::to_string(count), 12);
+        countText.setFillColor(sf::Color::White);
+        countText.setOutlineColor(sf::Color::Black);
+        countText.setOutlineThickness(1.f);
+        sf::FloatRect cb = countText.getLocalBounds();
+        countText.setPosition({x + slotSize - cb.size.x - cb.position.x - 3.f,
+                                startY + slotSize - cb.size.y - cb.position.y - 3.f});
+        window.draw(countText);
+    }
 }
