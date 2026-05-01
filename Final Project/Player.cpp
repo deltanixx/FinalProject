@@ -20,9 +20,9 @@ Player::Player() : sprite(idleTexture), swordSprite(swordTexture)
 
     float fullW   = (float)texSize.x * scale;
     float fullH   = (float)texSize.y * scale;
-    float topPad  = fullH * 0.07f;
-    float botPad  = fullH * 0.17f;
-    float sidePad = fullW * 0.09f;
+    float topPad  = fullH * 0.05f;
+    float botPad  = fullH * 0.03f;
+    float sidePad = fullW * 0.30f;
 
     size         = sf::Vector2f(fullW - 2.f * sidePad, fullH - topPad - botPad);
     spriteOffset = sf::Vector2f(-sidePad, -topPad);
