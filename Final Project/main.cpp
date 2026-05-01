@@ -46,7 +46,7 @@ int main()
     std::vector<std::unique_ptr<Enemy>> enemies;
     enemies.reserve(NUM_ENEMIES + 1);
   
-
+    int enemiesKilled = 0;
     for (int i = 0; i < NUM_ENEMIES; ++i) {
         auto e = std::make_unique<Enemy>("./Assets/Enemy/Enemy.png");
         float rx = 100.f + static_cast<float>(std::rand() % static_cast<int>(worldW - 200.f));
@@ -56,6 +56,7 @@ int main()
 
     float bossTimer    = 60.f;
     bool  bossSpawned  = false;
+
 
     Player player;
     float worldCenterX = worldW / 2.f;
@@ -127,6 +128,11 @@ int main()
     pauseMenu.addItem("Resume");
     pauseMenu.addItem("Main Menu");
     pauseMenu.addItem("Quit");
+
+    sf::Text killCountText(font, "", 24);
+    killCountText.setFillColor(sf::Color::White);
+    killCountText.setOutlineColor(sf::Color::Black);
+    killCountText.setOutlineThickness(1.f);
 
     GameState gameState = MENU;  // Start in menu
 
@@ -341,6 +347,13 @@ int main()
             for (auto& e : enemies)
                 if (e->isAlive() && player.consumeProjectileHit(e->getBounds()))
                     e->takeDamage(25);
+            //Count enemy kills
+            for (auto& e : enemies) {
+                if (!e->isAlive() && !e->isBoss()) {
+                    enemiesKilled++;
+                    std::cout << "Enemies killed: " << enemiesKilled << std::endl;
+                }
+            }
 
             for (auto& e : enemies) {
                 if (!e->isAlive() && !e->isBoss()) {
@@ -408,6 +421,9 @@ int main()
         for (auto& e : enemies)
             e->drawHealthBar(window);
         player.draw(window);
+        killCountText.setString("Enemies Killed: " + std::to_string(enemiesKilled));
+        killCountText.setPosition({ 0.f, 0.f });
+        window.draw(killCountText);
 
         // Draw menu or pause overlay
         if (gameState == MENU)
