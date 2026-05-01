@@ -11,7 +11,7 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({ 1280, 800 }), "SFML window");
+    sf::RenderWindow window(sf::VideoMode({ 1280, 800 }), "Terraria 2");
     window.setFramerateLimit(60);
 
 
@@ -32,6 +32,7 @@ int main()
     Player player;
     float worldCenterX = world.getSize().x / 2.f;
     player.setPosition({ worldCenterX, 50.f });
+    player.setSpawnPosition({ worldCenterX, 50.f });
     enemy1.setPosition({ worldCenterX + 200.f, 50.f });
     MusicPlayer music("./Assets/Music/theme.oga");
     music.play();
@@ -53,6 +54,9 @@ int main()
 
         enemy1.update(deltaTime, world);
         player.update(deltaTime, world);
+
+        if (player.getBounds().findIntersection(enemy1.getBounds()))
+            player.takeDamage(10);
 
         // Centre camera on player so it never shows outside the world
         sf::FloatRect pb = player.getBounds();
@@ -84,6 +88,10 @@ int main()
         world.Draw(window);
         enemy1.draw(window);
         player.draw(window);
+
+        window.setView(window.getDefaultView());
+        player.drawHUD(window);
+
         window.display();
     }
 }
