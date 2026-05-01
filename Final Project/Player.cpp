@@ -1,4 +1,5 @@
 #include "Player.hpp"
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <iostream>
@@ -36,7 +37,7 @@ Player::Player() : sprite(idleTexture), swordSprite(swordTexture)
     swordSprite.setTexture(swordTexture, true);
     {
         sf::Vector2u sz         = swordTexture.getSize();
-        float        swordScale = (playerScale * TILE_SIZE * 0.85f) / static_cast<float>(sz.y);
+        float        swordScale = (playerScale * TILE_SIZE * 2.5f) / static_cast<float>(sz.y);
         swordSprite.setScale({ swordScale, swordScale });
         // Origin at the handle tip (bottom-left area of the diagonal sprite)
         swordSprite.setOrigin({ sz.x * 0.10f, sz.y * 0.88f });
@@ -64,6 +65,9 @@ Player::Player() : sprite(idleTexture), swordSprite(swordTexture)
 
 void Player::draw(sf::RenderWindow& window)
 {
+    for (const auto& p : projectiles)
+        if (p.lifetime > 0.f)
+            window.draw(p.sprite);
     window.draw(sprite);
     if (swordSwinging)
         window.draw(swordSprite);
@@ -99,11 +103,34 @@ bool Player::isSwordActive() const { return swordSwinging; }
 sf::FloatRect Player::getSwordBounds() const
 {
     if (!swordSwinging) return sf::FloatRect({}, {});
-    const float reach = size.y * 1.4f;
+    const float reach = size.y * 2.5f;
     float x = facingRight
         ? position.x + size.x * 0.5f
         : position.x - reach + size.x * 0.5f;
-    return sf::FloatRect({ x, position.y - size.y * 0.1f }, { reach, size.y * 1.2f });
+    return sf::FloatRect({ x, position.y - size.y * 0.5f }, { reach, size.y * 2.0f });
+}
+
+void Player::updateProjectiles(float dt)
+{
+    for (auto& p : projectiles) {
+        p.sprite.move(p.velocity * dt);
+        p.lifetime -= dt;
+    }
+    projectiles.erase(
+        std::remove_if(projectiles.begin(), projectiles.end(),
+            [](const Projectile& p) { return p.lifetime <= 0.f; }),
+        projectiles.end());
+}
+
+bool Player::consumeProjectileHit(const sf::FloatRect& target)
+{
+    for (auto& p : projectiles) {
+        if (p.lifetime > 0.f && p.sprite.getGlobalBounds().findIntersection(target)) {
+            p.lifetime = 0.f;
+            return true;
+        }
+    }
+    return false;
 }
 
 void Player::takeDamage(int amount)
@@ -154,6 +181,8 @@ void Player::update(float deltaTime, const World& world)
     if (damageCooldown > 0.f)
         damageCooldown -= deltaTime;
 
+    updateProjectiles(deltaTime);
+
     if (isDead())
     {
         respawn();
@@ -183,6 +212,24 @@ void Player::update(float deltaTime, const World& world)
         swordTimer    = swordDuration;
         swordJustHeld = true;
         if (swooshSound) swooshSound->play();
+
+        // Spawn a projectile shaped like the sword flying in the facing direction
+        Projectile proj(swordTexture);
+        {
+            sf::Vector2u sz       = swordTexture.getSize();
+            float        projScale = (playerScale * TILE_SIZE * 1.8f) / static_cast<float>(sz.y);
+            proj.sprite.setScale({ projScale, projScale });
+            proj.sprite.setOrigin({ sz.x * 0.5f, sz.y * 0.5f });
+            sf::Vector2f hand = position + (facingRight
+                ? sf::Vector2f(size.x * 0.75f, size.y * 0.35f)
+                : sf::Vector2f(size.x * 0.25f, size.y * 0.35f));
+            proj.sprite.setPosition(hand);
+            const float projSpeed = 500.f;
+            proj.velocity = { facingRight ? projSpeed : -projSpeed, -80.f };
+            // Rotate so the blade points in the direction of travel
+            proj.sprite.setRotation(sf::degrees(facingRight ? -45.f : 135.f));
+        }
+        projectiles.push_back(std::move(proj));
     }
     if (!attackPressed)
         swordJustHeld = false;

@@ -16,15 +16,25 @@ public:
     sf::Vector2f setPosition(const sf::Vector2f& newPosition);
 
     bool chasePlayer(sf::Vector2f playerPosition, sf::Vector2f enemyPosition);
-    bool isAlive() const;
+    bool isAlive()  const;
+    bool isBoss()   const;
     void kill();
     void respawn(sf::Vector2f newPosition);
+    void takeDamage(int amount);
+    void setAsBoss();
+    void drawHealthBar(sf::RenderWindow& window);
+    int  getContactDamage() const;
 
 private:
     sf::Texture texture;
     sf::Sprite  sprite;
-    float       moveDir = 1.f;
-    bool        alive   = true;
+    float       moveDir          = 1.f;
+    float       instanceMoveSpeed = 25.f;
+    bool        alive            = true;
+    bool        isBoss_          = false;
+
+    int health    = 30;
+    int maxHealth = 30;
 
     sf::Vector2f enemyPosition;
 

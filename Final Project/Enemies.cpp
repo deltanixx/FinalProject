@@ -20,22 +20,72 @@ Enemy::Enemy(const std::string& imagePath) : sprite(texture)
     velocity = sf::Vector2f(0.f, 0.f);
 }
 
-bool Enemy::isAlive() const { return alive; }
+bool Enemy::isAlive()        const { return alive; }
+bool Enemy::isBoss()         const { return isBoss_; }
+int  Enemy::getContactDamage() const { return isBoss_ ? 25 : 10; }
 
 void Enemy::kill() { alive = false; }
+
+void Enemy::takeDamage(int amount)
+{
+    health -= amount;
+    if (health <= 0) {
+        health = 0;
+        kill();
+    }
+}
+
+void Enemy::setAsBoss()
+{
+    isBoss_           = true;
+    health            = 500;
+    maxHealth         = 500;
+    instanceMoveSpeed = 50.f;
+    sprite.setScale({ 0.225f, 0.225f });
+    size = sprite.getGlobalBounds().size;
+}
 
 void Enemy::respawn(sf::Vector2f newPosition)
 {
     alive    = true;
+    health   = maxHealth;
     velocity = sf::Vector2f(0.f, 0.f);
     setPosition(newPosition);
+}
+
+void Enemy::drawHealthBar(sf::RenderWindow& window)
+{
+    if (!alive) return;
+
+    const float barH = isBoss_ ? 10.f : 6.f;
+    const float barW = size.x;
+    const float barX = position.x;
+    const float barY = position.y - barH - 4.f;
+
+    sf::RectangleShape bg({ barW, barH });
+    bg.setPosition({ barX, barY });
+    bg.setFillColor(sf::Color(60, 60, 60));
+    window.draw(bg);
+
+    float fillRatio = static_cast<float>(health) / static_cast<float>(maxHealth);
+    sf::RectangleShape fill({ barW * fillRatio, barH });
+    fill.setPosition({ barX, barY });
+    fill.setFillColor(isBoss_ ? sf::Color(200, 0, 220) : sf::Color(50, 200, 50));
+    window.draw(fill);
+
+    sf::RectangleShape border({ barW, barH });
+    border.setPosition({ barX, barY });
+    border.setFillColor(sf::Color::Transparent);
+    border.setOutlineColor(sf::Color::White);
+    border.setOutlineThickness(1.f);
+    window.draw(border);
 }
 
 void Enemy::update(float deltaTime, const World& world)
 {
     if (!alive) return;
 
-    velocity.x = moveSpeed * moveDir;
+    velocity.x = instanceMoveSpeed * moveDir;
     applyPhysics(deltaTime, world);
 
     if (velocity.x == 0.f)

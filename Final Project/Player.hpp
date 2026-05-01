@@ -1,5 +1,6 @@
 #pragma once
 #include <optional>
+#include <vector>
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include "PhysicsEntity.hpp"
@@ -18,8 +19,9 @@ public:
     void          respawn();
     int           getHealth()      const;
     int           getMaxHealth()   const;
-    sf::FloatRect getSwordBounds() const;
-    bool          isSwordActive()  const;
+    sf::FloatRect getSwordBounds()                             const;
+    bool          isSwordActive()                              const;
+    bool          consumeProjectileHit(const sf::FloatRect& target);
 
 private:
     sf::Texture idleTexture;
@@ -46,6 +48,15 @@ private:
     static constexpr float swordDuration   = 0.35f;
     static constexpr float swordStartAngle = -90.f;
     static constexpr float swordEndAngle   =  80.f;
+
+    struct Projectile {
+        explicit Projectile(const sf::Texture& tex) : sprite(tex) {}
+        sf::Sprite   sprite;
+        sf::Vector2f velocity;
+        float        lifetime = 2.f;
+    };
+    std::vector<Projectile> projectiles;
+    void updateProjectiles(float dt);
 
     sf::Vector2f spriteOffset;
 
