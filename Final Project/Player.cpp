@@ -37,7 +37,7 @@ Player::Player() : sprite(idleTexture), swordSprite(swordTexture)
     swordSprite.setTexture(swordTexture, true);
     {
         sf::Vector2u sz         = swordTexture.getSize();
-        float        swordScale = (playerScale * TILE_SIZE * 2.5f) / static_cast<float>(sz.y);
+        float        swordScale = (playerScale * TILE_SIZE * 1.7f) / static_cast<float>(sz.y);
         swordSprite.setScale({ swordScale, swordScale });
         // Origin at the handle tip (bottom-left area of the diagonal sprite)
         swordSprite.setOrigin({ sz.x * 0.10f, sz.y * 0.88f });
@@ -217,7 +217,7 @@ void Player::update(float deltaTime, const World& world)
         Projectile proj(swordTexture);
         {
             sf::Vector2u sz       = swordTexture.getSize();
-            float        projScale = (playerScale * TILE_SIZE * 1.8f) / static_cast<float>(sz.y);
+            float        projScale = (playerScale * TILE_SIZE * 0.8f) / static_cast<float>(sz.y);
             proj.sprite.setScale({ projScale, projScale });
             proj.sprite.setOrigin({ sz.x * 0.5f, sz.y * 0.5f });
             sf::Vector2f hand = position + (facingRight
