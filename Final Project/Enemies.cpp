@@ -2,8 +2,11 @@
 #include <iostream>
 #include <cstdlib>
 
-Enemy::Enemy(const std::string& imagePath) : sprite(texture)
+Enemy::Enemy(const std::string& imagePath) : sprite(texture), hurtSound(hurtBuffer)
 {
+    if (!hurtBuffer.loadFromFile("./Assets/Sounds/zombieSound.mp3")) {
+        std::cerr << "Could not load hurSound.mp3" << std::endl;
+    }
     if (!texture.loadFromFile(imagePath))
         std::cerr << "Texture failed" << std::endl;
     else
@@ -28,6 +31,7 @@ void Enemy::kill() { alive = false; }
 
 void Enemy::takeDamage(int amount)
 {
+    hurtSound.play();
     health -= amount;
     if (health <= 0) {
         health = 0;

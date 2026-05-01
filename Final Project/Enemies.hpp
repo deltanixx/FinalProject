@@ -26,6 +26,9 @@ public:
     int  getContactDamage() const;
 
 private:
+    sf::SoundBuffer hurtBuffer;
+    sf::Sound hurtSound;
+
     sf::Texture texture;
     sf::Sprite  sprite;
     float       moveDir          = 1.f;
