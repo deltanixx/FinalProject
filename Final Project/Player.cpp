@@ -24,7 +24,8 @@ Player::Player() : sprite(idleTexture)
     size         = sf::Vector2f(fullW - 2.f * sidePad, fullH - topPad - botPad);
     spriteOffset = sf::Vector2f(-sidePad, -topPad);
 
-    position = sf::Vector2f(200.f, 50.f);
+    position      = sf::Vector2f(200.f, 50.f);
+    spawnPosition = position;
     sprite.setPosition(position + spriteOffset);
 }
 
@@ -54,9 +55,65 @@ void Player::updateAnimation(bool isMoving, float deltaTime)
     }
 }
 
+void Player::setSpawnPosition(sf::Vector2f pos) { spawnPosition = pos; }
+int  Player::getHealth()    const { return health; }
+int  Player::getMaxHealth() const { return maxHealth; }
+bool Player::isDead()       const { return health <= 0; }
+
+void Player::takeDamage(int amount)
+{
+    if (damageCooldown > 0.f) return;
+    health -= amount;
+    if (health < 0) health = 0;
+    damageCooldown = damageCooldownMax;
+}
+
+void Player::respawn()
+{
+    health         = maxHealth;
+    position       = spawnPosition;
+    velocity       = sf::Vector2f(0.f, 0.f);
+    damageCooldown = 0.f;
+}
+
+void Player::drawHUD(sf::RenderWindow& window)
+{
+    const float barW   = 200.f;
+    const float barH   = 20.f;
+    const float barX   = 20.f;
+    const float barY   = 20.f;
+
+    sf::RectangleShape bg({ barW, barH });
+    bg.setPosition({ barX, barY });
+    bg.setFillColor(sf::Color(50, 50, 50));
+    window.draw(bg);
+
+    float fillW = barW * (static_cast<float>(health) / maxHealth);
+    sf::RectangleShape fill({ fillW, barH });
+    fill.setPosition({ barX, barY });
+    fill.setFillColor(sf::Color(220, 50, 50));
+    window.draw(fill);
+
+    sf::RectangleShape border({ barW, barH });
+    border.setPosition({ barX, barY });
+    border.setFillColor(sf::Color::Transparent);
+    border.setOutlineColor(sf::Color::White);
+    border.setOutlineThickness(2.f);
+    window.draw(border);
+}
+
 /// Reads keyboard input, animates the sprite, flips it to face the direction of movement, and applies physics.
 void Player::update(float deltaTime, const World& world)
 {
+    if (damageCooldown > 0.f)
+        damageCooldown -= deltaTime;
+
+    if (isDead())
+    {
+        respawn();
+        return;
+    }
+
     bool left  = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)  ||
                  sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A);
     bool right = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) ||

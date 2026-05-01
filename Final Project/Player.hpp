@@ -7,21 +7,32 @@ public:
     Player();
     void draw(sf::RenderWindow& window) override;
     void update(float deltaTime, const World& world) override;
+    void drawHUD(sf::RenderWindow& window);
 
     sf::Vector2f getPosition() const;
+    void setSpawnPosition(sf::Vector2f pos);
+    void takeDamage(int amount);
+    bool isDead() const;
+    void respawn();
+    int getHealth() const;
+    int getMaxHealth() const;
 
 private:
     sf::Texture idleTexture;
     sf::Texture walkTexture;
     sf::Sprite  sprite;
 
-    sf::Vector2f playerPosition; //For enemy pathfinding
+    sf::Vector2f playerPosition;
+    sf::Vector2f spawnPosition;
 
-    int health;
+    int health    = 100;
+    int maxHealth = 100;
+    float damageCooldown = 0.f;
+    static constexpr float damageCooldownMax = 1.f;
 
-    sf::Vector2f spriteOffset; // offsets sprite render from physics box to compensate for texture padding
+    sf::Vector2f spriteOffset;
 
-    float playerScale = 8.f; 
+    float playerScale = 8.f;
     float animTimer   = 0.f;
     bool  showWalk    = false;
     bool  facingRight = true;
