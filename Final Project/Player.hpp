@@ -1,4 +1,5 @@
 #pragma once
+#include <optional>
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include "PhysicsEntity.hpp"
@@ -28,8 +29,8 @@ private:
     // Sword — declared before swordSprite so origin is stable
     sf::Texture     swordTexture;
     sf::Sprite      swordSprite;
-    sf::SoundBuffer swooshBuffer;
-    sf::Sound       swooshSound;
+    sf::SoundBuffer          swooshBuffer;
+    std::optional<sf::Sound> swooshSound;
 
     sf::Vector2f playerPosition;
     sf::Vector2f spawnPosition;

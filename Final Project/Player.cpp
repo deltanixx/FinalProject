@@ -56,8 +56,9 @@ Player::Player() : sprite(idleTexture), swordSprite(swordTexture)
             samples[i]     = static_cast<std::int16_t>(
                                 std::sin(2.f * 3.14159265f * freq * t) * envelope * 32767.f);
         }
-        swooshBuffer.loadFromSamples(samples.data(), n, 1, sampleRate, { sf::SoundChannel::Mono });
-        swooshSound.setBuffer(swooshBuffer);
+        if (!swooshBuffer.loadFromSamples(samples.data(), n, 1, sampleRate, { sf::SoundChannel::Mono }))
+            std::cerr << "Failed to generate swoosh sound" << std::endl;
+        swooshSound.emplace(swooshBuffer);
     }
 }
 
@@ -181,7 +182,7 @@ void Player::update(float deltaTime, const World& world)
         swordSwinging = true;
         swordTimer    = swordDuration;
         swordJustHeld = true;
-        swooshSound.play();
+        if (swooshSound) swooshSound->play();
     }
     if (!attackPressed)
         swordJustHeld = false;
