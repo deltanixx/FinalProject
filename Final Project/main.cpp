@@ -77,6 +77,7 @@ int main()
 
         for (auto& e : enemies)
             e->update(deltaTime, world);
+        player.setAimPosition(window.mapPixelToCoords(sf::Mouse::getPosition(window), camera));
         player.update(deltaTime, world);
 
         if (!bossSpawned) {

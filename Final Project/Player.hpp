@@ -22,6 +22,7 @@ public:
     sf::FloatRect getSwordBounds()                             const;
     bool          isSwordActive()                              const;
     bool          consumeProjectileHit(const sf::FloatRect& target);
+    void          setAimPosition(sf::Vector2f worldPos);
 
 private:
     sf::Texture idleTexture;
@@ -36,6 +37,7 @@ private:
 
     sf::Vector2f playerPosition;
     sf::Vector2f spawnPosition;
+    sf::Vector2f aimPosition;
 
     int   health    = 100;
     int   maxHealth = 100;

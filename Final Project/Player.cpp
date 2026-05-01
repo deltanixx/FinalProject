@@ -92,6 +92,7 @@ void Player::updateAnimation(bool isMoving, float deltaTime)
 }
 
 void Player::setSpawnPosition(sf::Vector2f pos) { spawnPosition = pos; }
+void Player::setAimPosition(sf::Vector2f worldPos) { aimPosition = worldPos; }
 int  Player::getHealth()    const { return health; }
 int  Player::getMaxHealth() const { return maxHealth; }
 bool Player::isDead()       const { return health <= 0; }
@@ -210,18 +211,22 @@ void Player::update(float deltaTime, const World& world)
 
         Projectile proj(swordTexture);
         {
-            sf::Vector2u sz       = swordTexture.getSize();
+            sf::Vector2u sz        = swordTexture.getSize();
             float        projScale = (playerScale * TILE_SIZE * 0.8f) / static_cast<float>(sz.y);
             proj.sprite.setScale({ projScale, projScale });
             proj.sprite.setOrigin({ sz.x * 0.5f, sz.y * 0.5f });
-            sf::Vector2f hand = position + (facingRight
-                ? sf::Vector2f(size.x * 0.75f, size.y * 0.35f)
-                : sf::Vector2f(size.x * 0.25f, size.y * 0.35f));
+
+            sf::Vector2f hand = position + sf::Vector2f(size.x * 0.5f, size.y * 0.35f);
             proj.sprite.setPosition(hand);
-            const float projSpeed = 750.f;
-            proj.velocity = { facingRight ? projSpeed : -projSpeed, -80.f };
-            // +45° CW rotates the upper-right blade to point right; -135° points it left
-            proj.sprite.setRotation(sf::degrees(facingRight ? 45.f : -135.f));
+
+            sf::Vector2f dir = aimPosition - hand;
+            float len = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+            if (len > 0.f) dir /= len;
+
+            proj.velocity = dir * 750.f;
+            // blade naturally points upper-right (~45°), so offset atan2 by +45° to align
+            float angle = std::atan2(dir.y, dir.x) * (180.f / 3.14159265f) + 45.f;
+            proj.sprite.setRotation(sf::degrees(angle));
         }
         projectiles.push_back(std::move(proj));
     }
