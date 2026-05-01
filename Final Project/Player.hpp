@@ -3,6 +3,7 @@
 #include <optional>
 #include <unordered_map>
 #include <vector>
+#include <filesystem>
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include "PhysicsEntity.hpp"
@@ -36,6 +37,10 @@ public:
     static constexpr int hotbarSlotCount = 2;
 
 private:
+
+    sf::SoundBuffer hurtBuffer;
+    sf::Sound hurtSound;
+
     sf::Texture idleTexture;
     sf::Texture walkTexture;
     sf::Sprite  sprite;
@@ -70,6 +75,7 @@ private:
     };
     std::vector<Projectile> projectiles;
     void updateProjectiles(float dt);
+
 
     // Pickaxe — texture declared before sprite so init-list order is safe
     sf::Texture  pickaxeTexture_;

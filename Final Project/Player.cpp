@@ -8,8 +8,12 @@
 
 static constexpr int hotbarTypes[] = {1, 2}; // dirt, grass tile IDs
 
-Player::Player() : sprite(idleTexture), swordSprite(swordTexture), pickaxeSprite_(pickaxeTexture_)
+Player::Player() : sprite(idleTexture), swordSprite(swordTexture), pickaxeSprite_(pickaxeTexture_), hurtSound(hurtBuffer)
 {
+    if (!hurtBuffer.loadFromFile("./Assets/Music/hurtSound.mp3")) {
+        std::cerr << "Could not load hurSound.mp3" << std::endl;
+    }
+
     if (!idleTexture.loadFromFile("./Assets/Player/player_idle.png"))
         std::cerr << "Failed to load player idle" << std::endl;
     if (!walkTexture.loadFromFile("./Assets/Player/player_walking.png"))
@@ -148,10 +152,13 @@ bool Player::consumeProjectileHit(const sf::FloatRect& target)
 
 void Player::takeDamage(int amount)
 {
+
     if (damageCooldown > 0.f) return;
     health -= amount;
     if (health < 0) health = 0;
     damageCooldown = damageCooldownMax;
+    hurtSound.play();
+
 }
 
 void Player::respawn()
