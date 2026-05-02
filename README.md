@@ -2,6 +2,15 @@
 
 A 2D sandbox survival game built in C++ with SFML 3, inspired by Terraria. Mine terrain, fight enemies, survive a boss, and build structures in a procedurally generated world.
 
+## Team
+
+| Name | GitHub |
+|---|---|
+| Carter | [@deltanixx](https://github.com/deltanixx) |
+| Carson | [@CarsonBluhm](https://github.com/CarsonBluhm) |
+| Jadon | [@JadeJade1122](https://github.com/JadeJade1122) |
+| Ryland | [@rylandrameylaur](https://github.com/rylandrameylaur) |
+
 ## Demo
 
 https://github.com/deltanixx/FinalProject/raw/main/demo.mp4
